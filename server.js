@@ -12,7 +12,7 @@ const io = require('socket.io')(httpServer, {
 // app.use(express.static(path.join(__dirname, 'public')));
 const PORT = process.env.PORT || 7890;
 
-httpServer.listen(4000, () => {
+httpServer.listen(PORT, () => {
   console.log('http server on 4000');
 });
 
