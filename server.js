@@ -16,10 +16,10 @@ httpServer.listen(PORT, () => {
   console.log('http server on 4000');
 });
 
-app.listen(PORT, () => {
-  // eslint-disable-next-line no-console
-  console.log(`Started on ${PORT}`);
-});
+// app.listen(PORT, () => {
+//   // eslint-disable-next-line no-console
+//   console.log(`Started on ${PORT}`);
+// });
 
 process.on('exit', () => {
   console.log('Goodbye!');
