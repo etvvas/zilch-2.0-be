@@ -4,6 +4,8 @@ const request = require('supertest');
 const app = require('../lib/app.js');
 const Game = require('../lib/models/Game.js')
 
+// Will need to revisit timestamps upon date implementation
+
 describe('Games tests', () => {
   beforeEach(() => {
     return setup(pool);
