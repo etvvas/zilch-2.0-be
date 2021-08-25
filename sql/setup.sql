@@ -3,25 +3,26 @@ results,
 games,
 users CASCADE;
 CREATE TABLE users (
-    user_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    username TEXT NOT NULL,
-    password_hash TEXT NOT NULL,
-    avatar TEXT NOT NULL
+  user_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  username TEXT NOT NULL,
+  password_hash TEXT NOT NULL,
+  avatar TEXT NOT NULL
 );
 CREATE TABLE games (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    first_user_id TEXT NOT NULL,
-    second_user_id TEXT NOT NULL,
-    winner TEXT,
-    timestamp_start TEXT NOT NULL,
-    timestamp_end TEXT
+  game_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  first_user_id TEXT NOT NULL,
+  second_user_id TEXT NOT NULL,
+  winner TEXT,
+  timestamp_start TEXT NOT NULL,
+  timestamp_end TEXT,
+  target_score INTEGER NOT NULL
 );
 CREATE TABLE results (
-    result_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    game_id TEXT NOT NULL,
-    user_id TEXT NOT NULL,
-    number_of_rounds INTEGER NOT NULL,
-    player_score INTEGER
+  result_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  game_id TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  number_of_rounds INTEGER NOT NULL,
+  player_score INTEGER
 );
 CREATE TABLE zilches (
     zilch_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
