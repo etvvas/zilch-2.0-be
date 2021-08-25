@@ -8,7 +8,7 @@ const io = require('socket.io')(httpServer, {
 const PORT = process.env.PORT || 7890;
 
 httpServer.listen(PORT, () => {
-  console.log('http server on 4000');
+  console.log(`http server on ${PORT}`);
 });
 
 process.on('exit', () => {
