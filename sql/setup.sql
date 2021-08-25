@@ -1,4 +1,5 @@
-DROP TABLE IF EXISTS results,
+DROP TABLE IF EXISTS zilches,
+results,
 games,
 users CASCADE;
 CREATE TABLE users (
@@ -21,4 +22,10 @@ CREATE TABLE results (
     user_id TEXT NOT NULL,
     number_of_rounds INTEGER NOT NULL,
     player_score INTEGER
+);
+CREATE TABLE zilches (
+    zilch_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    game_id TEXT NOT NULL,
+    user_id TEXT NOT NULL,
+    player_zilches INTEGER
 );
