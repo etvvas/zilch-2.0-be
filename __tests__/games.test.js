@@ -14,13 +14,15 @@ describe('Games tests', () => {
   const gameOne = {
     firstUserId: '1',
     secondUserId: '2',
-    timestampStart: '1:50'
+    timestampStart: '1:50',
+    targetScore: 5000
   }
 
   const gameTwo = {
     firstUserId: '2',
     secondUserId: '3',
-    timestampStart: '2:50'
+    timestampStart: '2:50',
+    targetScore: 3000
   }
 
   it('POST a game', async () => {
@@ -34,7 +36,8 @@ describe('Games tests', () => {
       secondUserId: '2',
       timestampStart: '1:50',
       winner: null,
-      timestampEnd: null
+      timestampEnd: null,
+      targetScore: 5000
     });
   });
 

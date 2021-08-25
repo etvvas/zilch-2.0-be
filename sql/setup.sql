@@ -12,5 +12,6 @@ CREATE TABLE games (
     second_user_id TEXT NOT NULL,
     winner TEXT,
     timestamp_start TEXT NOT NULL,
-    timestamp_end TEXT
+    timestamp_end TEXT,
+    target_score INTEGER NOT NULL
 );
