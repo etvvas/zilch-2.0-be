@@ -89,12 +89,14 @@ describe.only('user routes', () => {
       avatar: 'Avatar.png' });
   });
 
-  it('verifies that a user is authenticated', async () => {
+  it('logs a user out by clearing cookies', async () => {
     const response = await agent
       .get('/api/v1/logout');
 
     expect(response.body.message).toBe('No active user');
-
+  });
+  
+  it('verifies that a user is authenticated', async () => {
     const { body } = await agent
       .get('/api/v1/verify');
 
