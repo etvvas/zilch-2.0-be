@@ -65,6 +65,17 @@ describe.only('user routes', () => {
     });
   });
 
+  it('deletes a user from the database', async () => {
+    const newUser = await agent
+      .post('/api/v1/signup')
+      .send(user);
+
+    const { body } = await agent
+      .delete('/api/v1/users');
+
+    expect(body).toEqual(newUser.body);
+  });
+
 });
 
 
