@@ -89,6 +89,19 @@ describe.only('user routes', () => {
       avatar: 'Avatar.png' });
   });
 
+  it('verifies that a user is authenticated', async () => {
+    const response = await agent
+      .get('/api/v1/logout');
+
+    expect(response.body.message).toBe('No active user');
+
+    const { body } = await agent
+      .get('/api/v1/verify');
+
+    expect(body.status).toBe(500);
+    expect(body.message).toBe('jwt must be provided');
+  });
+
 });
 
 
