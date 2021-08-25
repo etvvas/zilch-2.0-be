@@ -8,7 +8,7 @@ describe('user routes', () => {
   beforeEach(() => {
     return setup(pool);
   });
-  
+
   it('signs a user up', async () => {
     const user = {
       username: 'chase',
@@ -21,8 +21,18 @@ describe('user routes', () => {
       .send(user);
 
     expect(body).toEqual({
-      username: 'chase',
       userId: '1',
+      username: 'chase',
       avatar: 'Avatar.png' });
+
+      
+    const newRequest = await request(app)
+      .post('/api/v1/signup')
+      .send(user);
+
+    expect(newRequest.body.message).toBe('Username already exists');
   });
+
 });
+
+
