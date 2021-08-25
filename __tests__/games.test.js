@@ -21,7 +21,9 @@ describe('Games tests', () => {
       id: '1',
       firstUserId: '1',
       secondUserId: '2',
-      timestampStart: '1:50'
+      timestampStart: '1:50',
+      winner: null,
+      timestampEnd: null
     });
   });
 });
