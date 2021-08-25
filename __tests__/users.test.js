@@ -56,7 +56,7 @@ describe.only('user routes', () => {
 
     //patch avatar
     const { body } = await agent
-      .patch(`/api/v1/account/${newUser.body.userId}`)
+      .patch('/api/v1/users')
       .send({ avatar: 'BetterAvatar.png' });
 
     expect(body).toEqual({
