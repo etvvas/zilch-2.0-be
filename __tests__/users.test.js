@@ -3,11 +3,17 @@ const setup = require('../data/setup.js');
 const request = require('supertest');
 const app = require('../lib/app.js');
 
-describe.skip('user routes', () => {
-
+describe('user routes', () => {
+const agent = request.agent(app)
   beforeEach(() => {
     return setup(pool);
   });
+
+  const user = {
+    username: 'chase',
+    password: 'password',
+    avatar: 'Avatar.png'
+  }
 
   it('signs a user up', async () => {
 
@@ -100,8 +106,16 @@ describe.skip('user routes', () => {
       .post('/api/v1/signup')
       .send(user);
 
+    await agent
+      .get('/api/v1/logout');
+    
+    await agent
+      .post('/api/v1/login')
+      .send(user);
+
     const verifyRes = await agent
       .get('/api/v1/verify');
+
 
     expect(verifyRes.body).toEqual({ ...newSignUp.body, iat: expect.any(Number) });
   });
