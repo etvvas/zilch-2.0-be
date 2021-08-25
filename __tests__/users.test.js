@@ -102,6 +102,15 @@ describe.only('user routes', () => {
 
     expect(body.status).toBe(500);
     expect(body.message).toBe('jwt must be provided');
+
+    const newSignUp = await agent
+      .post('/api/v1/signup')
+      .send(user);
+
+    const verifyRes = await agent
+      .get('/api/v1/verify');
+
+    expect(verifyRes.body).toEqual({ ...newSignUp.body, iat: expect.any(Number) });
   });
 
 });
