@@ -3,36 +3,34 @@ const setup = require('../data/setup.js');
 const request = require('supertest');
 const app = require('../lib/app.js');
 
-describe.skip('results routes', () => {
+describe('zilches routes', () => {
   beforeEach(() => {
     return setup(pool);
   });
 
-  const resultsOne = {
+  const zilchesOne = {
     gameId: '1',
     userId:'1',
-    numberOfRounds: 5,
-    playerScore: 300
+    playerZilches: 2
   }
 
-  const resultsTwo = {
+  const zilchesTwo = {
     gameId: '1',
     userId:'2',
     numberOfRounds: 5,
-    playerScore: 500
+    playerZilches: 0
   }
 
-  test('creates results via POST', async () => {
+  test('creates zilches per game via POST', async () => {
     const res = await request(app)
-      .post('/api/v1/results')
-      .send(resultsOne);
+      .post('/api/v1/zilches')
+      .send(zilchesOne);
 
     expect(res.body).toEqual({
-      resultId: '1',
+      zilchId: '1',
       gameId: '1',
       userId:'1',
-      numberOfRounds: 5,
-      playerScore: 300
+      playerZilches: 2
     });
   });
 });
