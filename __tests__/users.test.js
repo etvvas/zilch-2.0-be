@@ -3,6 +3,8 @@ const setup = require('../data/setup.js');
 const request = require('supertest');
 const app = require('../lib/app.js');
 
+const agent = request.agent(app);
+
 describe.only('user routes', () => {
   const user = {
     username: 'chase',
@@ -13,9 +15,10 @@ describe.only('user routes', () => {
   beforeEach(() => {
     return setup(pool);
   });
+
   it('signs a user up', async () => {
 
-    const { body } = await request(app)
+    const { body } = await agent
       .post('/api/v1/signup')
       .send(user);
 
@@ -24,8 +27,7 @@ describe.only('user routes', () => {
       username: 'chase',
       avatar: 'Avatar.png' });
 
-      
-    const newRequest = await request(app)
+    const newRequest = await agent
       .post('/api/v1/signup')
       .send(user);
 
@@ -33,11 +35,11 @@ describe.only('user routes', () => {
   });
 
   it('logs a user in', async () => {
-    await request(app)
+    await agent
       .post('/api/v1/signup')
       .send(user);
 
-    const { body } = await request(app)
+    const { body } = await agent
       .post('/api/v1/login')
       .send(user);
 
@@ -47,6 +49,9 @@ describe.only('user routes', () => {
       avatar: 'Avatar.png'
     });
   });
+  // it('updates a user', async () => {
+    
+  // });
 
 });
 
