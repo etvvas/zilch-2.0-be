@@ -7,6 +7,13 @@ describe('results routes', () => {
   beforeEach(() => {
     return setup(pool);
   });
+  const agent = request.agent(app);
+
+  const user = {
+    username: 'username',
+    password: 'password',
+    avatar: 'Avatar.png'
+  };
 
   const resultsOne = {
     gameId: '1',
@@ -23,7 +30,11 @@ describe('results routes', () => {
   }
 
   test('creates results via POST', async () => {
-    const res = await request(app)
+    const { body } = await agent
+      .post('/api/v1/signup')
+      .send(user);
+
+    const res = await agent
       .post('/api/v1/results')
       .send(resultsOne);
 
@@ -35,5 +46,4 @@ describe('results routes', () => {
       playerScore: 300
     });
   });
-
 });
