@@ -49,5 +49,21 @@ describe('Games tests', () => {
         .get('/api/v1/games')
 
     expect(res.body).toEqual([game1, game2])
+  });
+
+  it('update a game with winner via PUT', async () => {
+      const game1 = await Game.insert(gameOne);
+      console.log('GAME 1', game1);
+
+      game1.winner = 'JOE'
+
+      const res = await request(app)
+        .put(`/api/v1/games/${game1.gameId}`)
+        .send(game1)
+    
+        expect(res.body).toEqual({
+            ...game1,
+            winner: 'JOE'
+        })
   })
 });
