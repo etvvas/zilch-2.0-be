@@ -8,6 +8,14 @@ describe('zilches routes', () => {
     return setup(pool);
   });
 
+  const agent = request.agent(app);
+
+  const user = {
+    username: 'username',
+    password: 'password',
+    avatar: 'Avatar.png'
+  };
+
   const zilchesOne = {
     gameId: '1',
     userId:'1',
@@ -22,7 +30,11 @@ describe('zilches routes', () => {
   }
 
   test('creates zilches per game via POST', async () => {
-    const res = await request(app)
+    const { body } = await agent
+      .post('/api/v1/signup')
+      .send(user);
+      
+    const res = await agent
       .post('/api/v1/zilches')
       .send(zilchesOne);
 
