@@ -3,7 +3,7 @@ const setup = require('../data/setup.js');
 const request = require('supertest');
 const app = require('../lib/app.js');
 
-describe.skip('results routes', () => {
+describe('results routes', () => {
   beforeEach(() => {
     return setup(pool);
   });

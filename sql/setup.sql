@@ -25,8 +25,8 @@ CREATE TABLE results (
   player_score INTEGER
 );
 CREATE TABLE zilches (
-    zilch_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    game_id TEXT NOT NULL,
-    user_id TEXT NOT NULL,
-    player_zilches INTEGER
+  zilch_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  game_id TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  player_zilches INTEGER
 );

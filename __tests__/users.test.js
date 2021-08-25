@@ -100,8 +100,16 @@ describe.skip('user routes', () => {
       .post('/api/v1/signup')
       .send(user);
 
+    await agent
+      .get('/api/v1/logout');
+    
+    await agent
+      .post('/api/v1/login')
+      .send(user);
+
     const verifyRes = await agent
       .get('/api/v1/verify');
+
 
     expect(verifyRes.body).toEqual({ ...newSignUp.body, iat: expect.any(Number) });
   });
