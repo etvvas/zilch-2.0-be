@@ -1,4 +1,5 @@
-DROP TABLE IF EXISTS games,
+DROP TABLE IF EXISTS results,
+games,
 users CASCADE;
 CREATE TABLE users (
     user_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -13,4 +14,11 @@ CREATE TABLE games (
     winner TEXT,
     timestamp_start TEXT NOT NULL,
     timestamp_end TEXT
+);
+CREATE TABLE results (
+    result_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    game_id TEXT NOT NULL,
+    user_id TEXT NOT NULL,
+    number_of_rounds INTEGER NOT NULL,
+    player_score INTEGER
 );
