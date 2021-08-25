@@ -4,12 +4,20 @@ const request = require('supertest');
 const app = require('../lib/app.js');
 const Game = require('../lib/models/Game.js')
 
+const agent = request.agent(app);
+
 // Will need to revisit timestamps upon date implementation
 
 describe('Games tests', () => {
   beforeEach(() => {
     return setup(pool);
   });
+
+  const user = {
+    username: 'chase',
+    password: 'password',
+    avatar: 'Avatar.png'
+  };
 
   const gameOne = {
     firstUserId: '1',
@@ -26,7 +34,12 @@ describe('Games tests', () => {
   }
 
   it('POST a game', async () => {
-    const res = await request(app)
+
+    const { body } = await agent
+      .post('/api/v1/signup')
+      .send(user);
+
+    const res = await agent
       .post('/api/v1/games')
       .send(gameOne);
 
@@ -45,7 +58,7 @@ describe('Games tests', () => {
       const game1 = await Game.insert(gameOne)
       const game2 = await Game.insert(gameTwo)
 
-      const res = await request(app)
+      const res = await agent
         .get('/api/v1/games')
 
     expect(res.body).toEqual([game1, game2])
@@ -53,11 +66,10 @@ describe('Games tests', () => {
 
   it('update a game with winner via PUT', async () => {
       const game1 = await Game.insert(gameOne);
-      console.log('GAME 1', game1);
 
       game1.winner = 'JOE'
 
-      const res = await request(app)
+      const res = await agent
         .put(`/api/v1/games/${game1.gameId}`)
         .send(game1)
     
