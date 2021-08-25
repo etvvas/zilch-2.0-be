@@ -8,7 +8,6 @@ describe('user routes', () => {
   beforeEach(() => {
     return setup(pool);
   });
-
   it('signs a user up', async () => {
     const user = {
       username: 'chase',
