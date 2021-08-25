@@ -49,9 +49,21 @@ describe.only('user routes', () => {
       avatar: 'Avatar.png'
     });
   });
-  // it('updates a user', async () => {
-    
-  // });
+  it('updates a user', async () => {
+    const newUser = await agent
+      .post('/api/v1/signup')
+      .send(user);
+
+    //patch avatar
+    const { body } = await agent
+      .patch(`/api/v1/account/${newUser.body.userId}`)
+      .send({ avatar: 'BetterAvatar.png' });
+
+    expect(body).toEqual({
+      ...newUser.body,
+      avatar: 'BetterAvatar.png'
+    });
+  });
 
 });
 
