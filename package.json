@@ -24,9 +24,9 @@
     "@types/pg": "^8.6.1",
     "eslint": "^7.32.0",
     "jest": "^27.0.6",
+    "morgan": "^1.10.0",
     "nodemon": "^2.0.12",
     "prettier": "^2.3.2",
-    "morgan": "^1.10.0",
     "supertest": "^6.1.6"
   },
   "dependencies": {
