@@ -4,9 +4,11 @@ const request = require('supertest');
 const app = require('../lib/app.js');
 
 describe('user routes', () => {
+
   beforeEach(() => {
     return setup(pool);
   });
+  
   it('signs a user up', async () => {
     const user = {
       username: 'chase',
