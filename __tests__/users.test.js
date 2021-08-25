@@ -3,11 +3,17 @@ const setup = require('../data/setup.js');
 const request = require('supertest');
 const app = require('../lib/app.js');
 
-describe.skip('user routes', () => {
-
+describe('user routes', () => {
+const agent = request.agent(app)
   beforeEach(() => {
     return setup(pool);
   });
+
+  const user = {
+    username: 'chase',
+    password: 'password',
+    avatar: 'Avatar.png'
+  }
 
   it('signs a user up', async () => {
 
