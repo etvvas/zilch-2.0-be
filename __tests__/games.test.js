@@ -31,7 +31,7 @@ describe('Games tests', () => {
       .send(gameOne);
 
     expect(res.body).toEqual({
-      id: '1',
+      gameId: '1',
       firstUserId: '1',
       secondUserId: '2',
       timestampStart: '1:50',
