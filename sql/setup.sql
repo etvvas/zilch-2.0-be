@@ -20,6 +20,11 @@ CREATE TABLE users_zilches(
   game_id BIGINT NOT NULL,
   zilch_id BIGINT NOT NULL
 );
+CREATE TABLE users_uber_zilches (
+  user_id BIGINT NOT NULL,
+  game_id BIGINT NOT NULL,
+  uber_zilch_id BIGINT NOT NULL
+);
 CREATE TABLE games (
   game_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   first_user_id BIGINT NOT NULL,

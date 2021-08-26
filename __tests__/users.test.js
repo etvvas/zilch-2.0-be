@@ -145,16 +145,16 @@ describe('users routes', () => {
       gameId: zilch1.gameId,
       zilchId: zilch1.zilchId
     });
-    // const userZilch2 = await UserZilch.insert({
-    //   userId: '1',
-    //   gameId: zilch2.gameId,
-    //   zilchId: zilch2.zilchId
-    // });
-    // const userZilch3 = await UserZilch.insert({
-    //   userId: '1',
-    //   gameId: zilch3.gameId,
-    //   zilchId: zilch3.zilchId
-    // });
+    const userZilch2 = await UserZilch.insert({
+      userId: '1',
+      gameId: zilch2.gameId,
+      zilchId: zilch2.zilchId
+    });
+    const userZilch3 = await UserZilch.insert({
+      userId: '1',
+      gameId: zilch3.gameId,
+      zilchId: zilch3.zilchId
+    });
 
     const res = await agent
       .get('/api/v1/users/1/zilches');
@@ -177,6 +177,8 @@ describe('users routes', () => {
       }
     ])
   })
+
+  
 
   test('GETs all of a user\'s results', async () => {
     const user1 = await agent
@@ -219,9 +221,6 @@ describe('users routes', () => {
       numberOfRounds: 10,
       playerScore: 3250
     })
-
-    console.log('USER1 id', resultsUser1)
-    console.log('USER2 id', resultsUser2)
 
     const { body } = await agent
       .get(`/api/v1/users/${user1.body.userId}/results`)
