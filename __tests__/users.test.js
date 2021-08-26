@@ -3,7 +3,7 @@ const setup = require('../data/setup.js');
 const request = require('supertest');
 const app = require('../lib/app.js');
 const Game = require('../lib/models/Game.js');
-const {UserGame, UserZilch} = require('../lib/models/User-Stats.js');
+const { UserGame, UserZilch } = require('../lib/models/User-Stats.js');
 const Zilch = require('../lib/models/Zilch.js');
 
 describe('users routes', () => {
@@ -45,7 +45,7 @@ describe('users routes', () => {
     })
     console.log("USER ONE", userOne)
 
-    const userGame = {userId: user1.body.userId, gameId: game.gameId}
+    const userGame = { userId: user1.body.userId, gameId: game.gameId }
 
     const res = await agent
       .post('/api/v1/users/games')
@@ -62,11 +62,11 @@ describe('users routes', () => {
 
     const user2 = await agent
       .post('/api/v1/signup')
-      .send(userTwo); 
+      .send(userTwo);
 
     const user3 = await agent
       .post('/api/v1/signup')
-      .send(userThree); 
+      .send(userThree);
 
 
     const game1 = await Game.insert({
@@ -91,42 +91,51 @@ describe('users routes', () => {
     })
 
     const userGame1 = await UserGame.insert({
-      userId: user1.body.userId, 
+      userId: user1.body.userId,
       gameId: game1.gameId
     })
 
     const userGame2 = await UserGame.insert({
-      userId: user2.body.userId, 
+      userId: user2.body.userId,
       gameId: game1.gameId
     })
 
     const userGame3 = await UserGame.insert({
-      userId: user2.body.userId, 
+      userId: user2.body.userId,
       gameId: game2.gameId
     })
 
     const res = await agent
       .get(`/api/v1/users/${user2.body.userId}/games`)
     expect(res.body).toEqual([
-      {userId: user2.body.userId, ...game1}, 
-      {userId: user2.body.userId, ...game2}
+      { userId: user2.body.userId, ...game1 },
+      { userId: user2.body.userId, ...game2 }
     ]);
   });
 
   test('GETs all users zilches', async () => {
+    const user1 = await agent
+      .post('/api/v1/signup')
+      .send(userOne);
+
+    const user2 = await agent
+      .post('/api/v1/signup')
+      .send(userTwo);
+
+
     const zilch1 = await Zilch.insert({
       gameId: '1',
-      userId: '1',
+      userId: user1.body.userId,
       playerZilches: 2
     })
     const zilch2 = await Zilch.insert({
       gameId: '2',
-      userId: '1',
+      userId: user1.body.userId,
       playerZilches: 1
     })
     const zilch3 = await Zilch.insert({
       gameId: '3',
-      userId: '1',
+      userId: user1.body.userId,
       playerZilches: 20
     })
 
@@ -135,19 +144,36 @@ describe('users routes', () => {
       gameId: zilch1.gameId,
       zilchId: zilch1.zilchId
     });
-    const userZilch2 = await UserZilch.insert({
-      userId: '1',
-      gameId: zilch2.gameId,
-      zilchId: zilch2.zilchId
-    });
-    const userZilch3 = await UserZilch.insert({
-      userId: '1',
-      gameId: zilch3.gameId,
-      zilchId: zilch3.zilchId
-    });
+    // const userZilch2 = await UserZilch.insert({
+    //   userId: '1',
+    //   gameId: zilch2.gameId,
+    //   zilchId: zilch2.zilchId
+    // });
+    // const userZilch3 = await UserZilch.insert({
+    //   userId: '1',
+    //   gameId: zilch3.gameId,
+    //   zilchId: zilch3.zilchId
+    // });
 
     const res = await agent
-    .get('/api/v1/users/1/zilches');
-    expect(res.body).toEqual([userZilch1])
+      .get('/api/v1/users/1/zilches');
+
+    expect(res.body).toEqual([
+      {
+        userId: '1',
+        gameId: '1',
+        playerZilches: 2
+      },
+      {
+        userId: '1',
+        gameId: '2',
+        playerZilches: 1
+      },
+      {
+        userId: '1',
+        gameId: '3',
+        playerZilches: 20
+      }
+    ])
   })
 });
