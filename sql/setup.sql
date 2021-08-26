@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS users,
 users_games,
+users_zilches,
 games,
 results,
 zilches,
@@ -13,6 +14,10 @@ CREATE TABLE users (
 CREATE TABLE users_games (
   user_id BIGINT NOT NULL,
   game_id BIGINT NOT NULL
+);
+CREATE TABLE users_zilches(
+  user_id BIGINT NOT NULL,
+  zilch_id BIGINT NOT NULL
 );
 CREATE TABLE games (
   game_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,

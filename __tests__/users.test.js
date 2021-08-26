@@ -3,7 +3,7 @@ const setup = require('../data/setup.js');
 const request = require('supertest');
 const app = require('../lib/app.js');
 const Game = require('../lib/models/Game.js');
-const UserGame = require('../lib/models/User-Game.js');
+const userGame = require('../lib/models/User-Stats.js');
 
 describe('users routes', () => {
 
@@ -31,7 +31,7 @@ describe('users routes', () => {
     avatar: 'Avatar.png'
   }
 
-  test('create a usergame via POST', async () => {
+  test('create a userGame via POST', async () => {
     const user1 = await agent
       .post('/api/v1/signup')
       .send(userOne);
@@ -88,24 +88,24 @@ describe('users routes', () => {
       targetScore: 10000
     })
 
-    const userGame1 = await UserGame.insert({
+    const userGame1 = await userGame.insert({
       userId: user1.body.userId, 
       gameId: game1.gameId
     })
 
-    const userGame2 = await UserGame.insert({
+    const userGame2 = await userGame.insert({
       userId: user2.body.userId, 
       gameId: game1.gameId
     })
 
-    const userGame3 = await UserGame.insert({
+    const userGame3 = await userGame.insert({
       userId: user2.body.userId, 
       gameId: game2.gameId
     })
 
     const res = await agent
       .get(`/api/v1/users/${user2.body.userId}/games`)
-    
+    console.log(res.body)
     expect(res.body).toEqual([
       {userId: user2.body.userId, ...game1}, 
       {userId: user2.body.userId, ...game2}
