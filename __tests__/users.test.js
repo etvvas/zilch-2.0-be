@@ -176,4 +176,15 @@ describe('users routes', () => {
       }
     ])
   })
+
+  test('GETs all of a user\'s results', async () => {
+    const user1 = await agent
+      .post('/api/v1/signup')
+      .send(userOne);
+
+    const { body } = await agent
+      .get(`/api/v1/users/${user1.body.user_id}/results`)
+
+    console.log(body)
+  })
 });
