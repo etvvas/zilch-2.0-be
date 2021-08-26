@@ -3,7 +3,7 @@ const setup = require('../data/setup.js');
 const request = require('supertest');
 const app = require('../lib/app.js');
 const Game = require('../lib/models/Game.js');
-const userGame = require('../lib/models/User-Stats.js');
+const { userGame } = require('../lib/models/User-Stats.js');
 
 describe('users routes', () => {
 
@@ -42,6 +42,7 @@ describe('users routes', () => {
       timestampStart: '1:50',
       targetScore: 5000
     })
+    console.log("USER ONE", userOne)
 
     const userGame = {userId: user1.body.userId, gameId: game.gameId}
 
