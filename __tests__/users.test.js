@@ -5,6 +5,7 @@ const app = require('../lib/app.js');
 const Game = require('../lib/models/Game.js');
 const { UserGame, UserZilch } = require('../lib/models/UserStats.js');
 const Zilch = require('../lib/models/Zilch.js');
+const Result = require('../lib/models/Result.js')
 
 describe('users routes', () => {
 
@@ -182,9 +183,72 @@ describe('users routes', () => {
       .post('/api/v1/signup')
       .send(userOne);
 
-    const { body } = await agent
-      .get(`/api/v1/users/${user1.body.user_id}/results`)
+    const user2 = await agent
+      .post('/api/v1/signup')
+      .send(userTwo);
 
-    console.log(body)
+    const game1 = await Game.insert({
+      firstUserId: user1.body.userId.toString(),
+      secondUserId: user2.body.userId.toString(),
+      timestampStart: '1:50',
+      timestampEnd: '2:00',
+      targetScore: 5000,
+      winner: user1.body.username
+    })
+
+    const userGame1 = await UserGame.insert({
+      userId: user1.body.userId,
+      gameId: game1.gameId
+    })
+
+    const userGame2 = await UserGame.insert({
+      userId: user2.body.userId,
+      gameId: game1.gameId
+    })
+
+    const resultsUser1 = await Result.insert({
+      gameId: game1.gameId.toString(),
+      userId: user1.body.userId.toString(),
+      numberOfRounds: 10,
+      playerScore: 5000
+    })
+
+    const resultsUser2 = await Result.insert({
+      gameId: game1.gameId.toString(),
+      userId: user2.body.userId.toString(),
+      numberOfRounds: 10,
+      playerScore: 3250
+    })
+
+    console.log('USER1 id', resultsUser1)
+    console.log('USER2 id', resultsUser2)
+
+    const { body } = await agent
+      .get(`/api/v1/users/${user1.body.userId}/results`)
+
+    expect(body).toEqual([{
+      userId: user1.body.userId,
+      gameId: game1.gameId.toString(),
+      winner: user1.body.username,
+      targetScore: 5000,
+      numberOfRounds: 10,
+      playerScore: 5000,
+      timestampStart: '1:50',
+      timestampEnd: '2:00'
+    }])
+
+    const secondUserResults = await agent
+      .get(`/api/v1/users/${user2.body.userId}/results`)
+
+    expect(secondUserResults.body).toEqual([{
+      userId: user2.body.userId,
+      gameId: game1.gameId.toString(),
+      winner: user1.body.username,
+      targetScore: 5000,
+      numberOfRounds: 10,
+      playerScore: 3250,
+      timestampStart: '1:50',
+      timestampEnd: '2:00'
+    }])
   })
 });
