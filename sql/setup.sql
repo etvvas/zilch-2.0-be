@@ -17,6 +17,7 @@ CREATE TABLE users_games (
 );
 CREATE TABLE users_zilches(
   user_id BIGINT NOT NULL,
+  game_id BIGINT NOT NULL,
   zilch_id BIGINT NOT NULL
 );
 CREATE TABLE games (
