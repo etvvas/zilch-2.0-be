@@ -3,7 +3,7 @@ const setup = require('../data/setup.js');
 const request = require('supertest');
 const app = require('../lib/app.js');
 const Game = require('../lib/models/Game.js');
-const { UserGame, UserZilch } = require('../lib/models/User-Stats.js');
+const { UserGame, UserZilch } = require('../lib/models/UserStats.js');
 const Zilch = require('../lib/models/Zilch.js');
 
 describe('users routes', () => {
