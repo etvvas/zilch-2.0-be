@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS zilches,
 results,
+uber_zilches,
 games,
 users CASCADE;
 CREATE TABLE users (
@@ -29,4 +30,10 @@ CREATE TABLE zilches (
   game_id TEXT NOT NULL,
   user_id TEXT NOT NULL,
   player_zilches INTEGER
+);
+CREATE TABLE uber_zilches (
+  uber_zilch_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  game_id TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  player_uber_zilches INTEGER
 );
