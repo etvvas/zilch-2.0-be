@@ -5,6 +5,13 @@ const io = require('socket.io')(httpServer, {
   cors: true
 });
 
+io.on('connection', socket => {
+  console.log(`${socket.id} connected`);
+  socket.emit('welcome', 'welcome!')
+
+})
+
+
 const PORT = process.env.PORT || 7890;
 
 httpServer.listen(PORT, () => {
