@@ -20,3 +20,4 @@ jobs:
         DATABASE_URL: postgres://alchemy:alchemy@postgres:5432/alchemy
         APP_SECRET: ${{ secrets.APP_SECRET }}
         SALT: ${{ secrets.SALT }}
+        SECURE: ${{ secrets.SECURE }}
