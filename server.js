@@ -97,7 +97,7 @@ io.on("connection", (socket) => {
       room.ready.push(userId)
       if(room.ready.length <= 2) {
         // alert users that game is starting
-      io.to(room.roomName).emit('START_GAME', `${username} is ready`)
+      io.to(room.roomName).emit('READY', username)
     }
     })
     
