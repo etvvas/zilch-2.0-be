@@ -7,7 +7,7 @@ const { UserGame, UserZilch } = require('../lib/models/UserStats.js');
 const Zilch = require('../lib/models/Zilch.js');
 const Result = require('../lib/models/Result.js')
 
-describe('users routes', () => {
+describe.skip('users routes', () => {
 
   beforeEach(() => {
     return setup(pool);
