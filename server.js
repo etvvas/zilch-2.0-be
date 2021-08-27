@@ -33,7 +33,7 @@ const io = require("socket.io")(httpServer, {
 
 io.on("connection", (socket) => {
   console.log(`${socket.id} connected`);
-
+  socket.on('DISCONNECT', () => socket.disconnect(true))
   socket.emit('ENTER_LOBBY', gameRooms)
   socket.on("JOIN_ROOM", ({userId, username, avatar}, roomName) => {
     if(!gameRooms.find(room => room.roomName === roomName)) {
