@@ -1,4 +1,5 @@
 const app = require('./lib/app.js');
+const redis = require('redis')
 const pool = require('./lib/utils/pool.js');
 const httpServer = require('http').createServer(app);
 const io = require('socket.io')(httpServer, {
@@ -6,6 +7,12 @@ const io = require('socket.io')(httpServer, {
 });
 
 const PORT = process.env.PORT || 7890;
+
+const redisClient = redis.createClient(process.env.REDIS_URL, {
+  tls: {
+    rejectUnauthorized: false
+  }
+})
 
 httpServer.listen(PORT, () => {
   console.log(`http server on ${PORT}`);
@@ -17,4 +24,4 @@ process.on('exit', () => {
 });
 
 
-module.exports = io;
+module.exports = { io, redisClient };
