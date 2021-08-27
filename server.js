@@ -33,7 +33,9 @@ const io = require("socket.io")(httpServer, {
 
 io.on("connection", (socket) => {
   console.log(`${socket.id} connected`);
+
   socket.on('DISCONNECT', () => socket.disconnect(true))
+
   socket.emit('ENTER_LOBBY', gameRooms)
   //get game room data on initial entry
   //AND any time there is an update
@@ -41,6 +43,7 @@ io.on("connection", (socket) => {
 
     if(!gameRooms.find(room => room.roomName === roomName)) {
       gameRooms.push({
+        ready: [],
         players: [userId],
         roomName: roomName,
         rounds: 0,
@@ -57,9 +60,13 @@ io.on("connection", (socket) => {
         }
       });
       io.emit('ENTER_LOBBY', gameRooms)
+
       socket.join(roomName);
+
     } else {
+
       const room = gameRooms.find(room => room.roomName === roomName)
+
       if (room.players.length === 1) {
         room.players.push(userId)
         room.secondUser = {
@@ -72,17 +79,45 @@ io.on("connection", (socket) => {
           playerZilches: 0,
           playerUberZilches: 0,
         }
+
         socket.join(roomName);
         io.emit('ENTER_LOBBY', gameRooms)
+
       } else {
+
         socket.emit('FULL_ROOM')
       }
     }
-    console.log(gameRooms);
   });
+
+  socket.on('PLAYER_READY',
+  // Ready buttons
+  // ready: [] -> if length === 2 , start game
+    (userId, room) => {
+      const currentRoom = gameRooms.find(gameRoom => gameRoom.roomName === room)
+      console.log('currentRoom', currentRoom);
+      currentRoom.ready.push(userId)
+      if(currentRoom.ready.length === 2 ) {
+        io.to([currentRoom.roomName]).emit('START_GAME', 'Ready to play!')
+      }
+    }
+  // initialize game (/api/v1/startgame)
+  // randomize first player
+  // currentPlayer = room.players[userIndex]
+  // userIndex is random number initially
+  // userIndex = ++userIndex % 2;
+
+
+  
+  )
+
   socket.on('disconnect', () => {
+
     console.log(socket.id, 'disconnected');
+
   })
+
+
 });
 
 const PORT = process.env.PORT || 7890;
