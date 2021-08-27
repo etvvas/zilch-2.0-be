@@ -35,6 +35,8 @@ io.on("connection", (socket) => {
   console.log(`${socket.id} connected`);
   socket.on('DISCONNECT', () => socket.disconnect(true))
   socket.emit('ENTER_LOBBY', gameRooms)
+  //get game room data on initial entry
+  //AND any time there is an update
   socket.on("JOIN_ROOM", ({userId, username, avatar}, roomName) => {
     if(!gameRooms.find(room => room.roomName === roomName)) {
       gameRooms.push({
@@ -53,22 +55,28 @@ io.on("connection", (socket) => {
           playerUberZilches: 0,
         }
       });
+      io.emit('ENTER_LOBBY', gameRooms)
+      socket.join(roomName);
     } else {
       const room = gameRooms.find(room => room.roomName === roomName)
-      room.players.push(userId)
-      room.secondUser = {
-        userName: username,
-        userId: userId,
-        avatar: avatar,
-        gameId: "",
-        numberOfRound: 0,
-        playerScore: 0,
-        playerZilches: 0,
-        playerUberZilches: 0,
+      if (room.players.length === 1) {
+        room.players.push(userId)
+        room.secondUser = {
+          userName: username,
+          userId: userId,
+          avatar: avatar,
+          gameId: "",
+          numberOfRound: 0,
+          playerScore: 0,
+          playerZilches: 0,
+          playerUberZilches: 0,
+        }
+        socket.join(roomName);
+        io.emit('ENTER_LOBBY', gameRooms)
+      } else {
+        socket.emit('FULL_ROOM')
       }
     }
-
-    socket.join(roomName);
     console.log(gameRooms);
   });
   socket.on('disconnect', () => {
