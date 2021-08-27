@@ -35,6 +35,8 @@ io.on("connection", (socket) => {
   console.log(`${socket.id} connected`);
   socket.on('DISCONNECT', () => socket.disconnect(true))
   socket.emit('ENTER_LOBBY', gameRooms)
+  //get game room data on initial entry
+  //AND any time there is an update
   socket.on("JOIN_ROOM", ({userId, username, avatar}, roomName) => {
 
     if(!gameRooms.find(room => room.roomName === roomName)) {
@@ -54,11 +56,10 @@ io.on("connection", (socket) => {
           playerUberZilches: 0,
         }
       });
+      io.emit('ENTER_LOBBY', gameRooms)
       socket.join(roomName);
-
     } else {
       const room = gameRooms.find(room => room.roomName === roomName)
-
       if (room.players.length === 1) {
         room.players.push(userId)
         room.secondUser = {
@@ -72,7 +73,7 @@ io.on("connection", (socket) => {
           playerUberZilches: 0,
         }
         socket.join(roomName);
-
+        io.emit('ENTER_LOBBY', gameRooms)
       } else {
         socket.emit('FULL_ROOM')
       }
