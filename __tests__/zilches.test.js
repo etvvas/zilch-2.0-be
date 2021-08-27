@@ -3,7 +3,7 @@ const setup = require('../data/setup.js');
 const request = require('supertest');
 const app = require('../lib/app.js');
 
-describe.skip('zilches routes', () => {
+describe('zilches routes', () => {
   beforeEach(() => {
     return setup(pool);
   });
@@ -37,6 +37,8 @@ describe.skip('zilches routes', () => {
     const res = await agent
       .post('/api/v1/zilches')
       .send(zilchesOne);
+
+    console.log('DATA', new Date())
 
     expect(res.body).toEqual({
       zilchId: '1',

@@ -1,10 +1,10 @@
 DROP TABLE IF EXISTS users,
 users_games,
 users_zilches,
-users_uber_zilches,
 games,
 results,
 zilches,
+users_uber_zilches,
 uber_zilches CASCADE;
 CREATE TABLE users (
   user_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
