@@ -3,9 +3,10 @@ const setup = require('../data/setup.js');
 const request = require('supertest');
 const app = require('../lib/app.js');
 const Game = require('../lib/models/Game.js');
-const { UserGame, UserZilch } = require('../lib/models/UserStats.js');
+const { UserGame, UserZilch, UserUberZilches } = require('../lib/models/UserStats.js');
 const Zilch = require('../lib/models/Zilch.js');
-const Result = require('../lib/models/Result.js')
+const Result = require('../lib/models/Result.js');
+const UberZilch = require('../lib/models/UberZilch.js');
 
 describe('users routes', () => {
 
@@ -178,7 +179,75 @@ describe('users routes', () => {
     ])
   })
 
-  
+  test('GETs all of a users uberZilches', async () => {
+    const user1 = await agent
+      .post('/api/v1/signup')
+      .send(userOne);
+
+    const user2 = await agent
+      .post('/api/v1/signup')
+      .send(userTwo);
+
+
+    const uberZilch1 = await UberZilch.insert({
+      gameId: '1',
+      userId: user1.body.userId,
+      playerUberZilches: 2
+    })
+    const uberZilch2 = await UberZilch.insert({
+      gameId: '2',
+      userId: user1.body.userId,
+      playerUberZilches: 1
+    })
+    const uberZilch3 = await UberZilch.insert({
+      gameId: '3',
+      userId: user1.body.userId,
+      playerUberZilches: 20
+    })
+
+    const userUberZilch1 = await UserUberZilches.insert({
+      userId: '1',
+      gameId: uberZilch1.gameId,
+      uberZilchId: uberZilch1.uberZilchId
+    });
+    console.log('UZ 1', userUberZilch1)
+    const userUberZilch2 = await UserUberZilches.insert({
+      userId: '1',
+      gameId: uberZilch2.gameId,
+      uberZilchId: uberZilch2.uberZilchId
+    });
+    const userUberZilch3 = await UserUberZilches.insert({
+      userId: '1',
+      gameId: uberZilch3.gameId,
+      uberZilchId: uberZilch3.uberZilchId
+    });
+    const res = await agent
+      .get('/api/v1/users/1/uberZilches');
+
+    expect(res.body).toEqual([
+      {
+        userId: '1',
+        gameId: '1',
+        playerUberZilches: 2,
+        uberZilchId: '1',
+        username: 'username'
+      },
+      {
+        userId: '1',
+        gameId: '2',
+        playerUberZilches: 1,
+        uberZilchId: '2',
+        username: 'username'
+      },
+      {
+        userId: '1',
+        gameId: '3',
+        playerUberZilches: 20,
+        uberZilchId: '3',
+        username: 'username'
+      }
+    ])
+  })
 
   test('GETs all of a user\'s results', async () => {
     const user1 = await agent
