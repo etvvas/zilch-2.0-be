@@ -178,7 +178,7 @@ describe('users routes', () => {
     ])
   })
 
-  
+
 
   test('GETs all of a user\'s results', async () => {
     const user1 = await agent
@@ -250,4 +250,6 @@ describe('users routes', () => {
       timestampEnd: '2:00'
     }])
   })
+
+
 });
