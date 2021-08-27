@@ -34,6 +34,7 @@ const io = require("socket.io")(httpServer, {
 io.on("connection", (socket) => {
   console.log(`${socket.id} connected`);
   socket.on("JOIN_ROOM", ({userId, username, avatar}, roomName) => {
+
     if(!gameRooms.find(room => room.roomName === roomName)) {
       gameRooms.push({
         players: [userId],
@@ -51,33 +52,33 @@ io.on("connection", (socket) => {
           playerUberZilches: 0,
         }
       });
+      socket.join(roomName);
+
     } else {
       const room = gameRooms.find(room => room.roomName === roomName)
-      room.players.push(userId)
-      room.secondUser = {
-        userName: username,
-        userId: userId,
-        avatar: avatar,
-        gameId: "",
-        numberOfRound: 0,
-        playerScore: 0,
-        playerZilches: 0,
-        playerUberZilches: 0,
+
+      if (room.players.length === 1) {
+        room.players.push(userId)
+        room.secondUser = {
+          userName: username,
+          userId: userId,
+          avatar: avatar,
+          gameId: "",
+          numberOfRound: 0,
+          playerScore: 0,
+          playerZilches: 0,
+          playerUberZilches: 0,
+        }
+        socket.join(roomName);
+
+      } else {
+        socket.emit('FULL_ROOM')
       }
     }
-
-    socket.join(roomName);
     console.log(gameRooms);
   });
   
 });
-
-io.on('connection', socket => {
-  console.log(`${socket.id} connected`);
-  socket.emit('welcome', 'welcome!')
-
-})
-
 
 const PORT = process.env.PORT || 7890;
 
