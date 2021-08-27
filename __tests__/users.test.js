@@ -8,7 +8,7 @@ const Zilch = require('../lib/models/Zilch.js');
 const Result = require('../lib/models/Result.js');
 const UberZilch = require('../lib/models/UberZilch.js');
 
-describe('users routes', () => {
+describe.skip('users routes', () => {
 
   beforeEach(() => {
     return setup(pool);
