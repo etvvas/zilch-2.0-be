@@ -8,11 +8,6 @@ const io = require('socket.io')(httpServer, {
 
 const PORT = process.env.PORT || 7890;
 
-const redisClient = redis.createClient(process.env.REDIS_URL, {
-  tls: {
-    rejectUnauthorized: false
-  }
-})
 
 httpServer.listen(PORT, () => {
   console.log(`http server on ${PORT}`);
@@ -24,4 +19,4 @@ process.on('exit', () => {
 });
 
 
-module.exports = { io, redisClient };
+module.exports = { io };
