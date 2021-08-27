@@ -33,8 +33,8 @@ const io = require("socket.io")(httpServer, {
 
 io.on("connection", (socket) => {
   console.log(`${socket.id} connected`);
-  socket.on("ENTER_LOBBY", () => socket.emit("ENTERED_LOBBY", gameRooms));
-  // socket.emit('ENTER_LOBBY', gameRooms);
+  socket.on('DISCONNECT', () => socket.disconnect(true))
+  socket.emit('ENTER_LOBBY', gameRooms)
   socket.on("JOIN_ROOM", ({userId, username, avatar}, roomName) => {
 
     if(!gameRooms.find(room => room.roomName === roomName)) {
@@ -79,7 +79,9 @@ io.on("connection", (socket) => {
     }
     console.log(gameRooms);
   });
-  
+  socket.on('disconnect', () => {
+    console.log(socket.id, 'disconnected');
+  })
 });
 
 const PORT = process.env.PORT || 7890;
