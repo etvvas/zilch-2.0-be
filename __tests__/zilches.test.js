@@ -3,7 +3,7 @@ const setup = require('../data/setup.js');
 const request = require('supertest');
 const app = require('../lib/app.js');
 
-describe('zilches routes', () => {
+describe.skip('zilches routes', () => {
   beforeEach(() => {
     return setup(pool);
   });
@@ -18,13 +18,13 @@ describe('zilches routes', () => {
 
   const zilchesOne = {
     gameId: '1',
-    userId:'1',
+    userId: '1',
     playerZilches: 2
   }
 
   const zilchesTwo = {
     gameId: '1',
-    userId:'2',
+    userId: '2',
     numberOfRounds: 5,
     playerZilches: 0
   }
@@ -33,7 +33,7 @@ describe('zilches routes', () => {
     const { body } = await agent
       .post('/api/v1/signup')
       .send(user);
-      
+
     const res = await agent
       .post('/api/v1/zilches')
       .send(zilchesOne);
@@ -41,7 +41,7 @@ describe('zilches routes', () => {
     expect(res.body).toEqual({
       zilchId: '1',
       gameId: '1',
-      userId:'1',
+      userId: '1',
       playerZilches: 2
     });
   });
