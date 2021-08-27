@@ -8,7 +8,7 @@ const agent = request.agent(app);
 
 // Will need to revisit timestamps upon date implementation
 
-describe.skip('Games tests', () => {
+describe('Games tests', () => {
   beforeEach(() => {
     return setup(pool);
   });
@@ -44,13 +44,23 @@ describe.skip('Games tests', () => {
       .send(gameOne);
 
     expect(res.body).toEqual({
-      gameId: '1',
-      firstUserId: '1',
-      secondUserId: '2',
-      timestampStart: '1:50',
-      winner: null,
-      timestampEnd: null,
-      targetScore: 5000
+      newGame: {
+        gameId: '1',
+        firstUserId: '1',
+        secondUserId: '2',
+        timestampStart: '1:50',
+        winner: null,
+        timestampEnd: null,
+        targetScore: 5000
+      },
+      firstUserGame: {
+        gameId: '1',
+        userId: '1'
+      },
+      secondUserGame: {
+        gameId: '1',
+        userId: '2'
+      }
     });
   });
 
