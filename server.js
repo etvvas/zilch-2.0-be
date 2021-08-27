@@ -34,7 +34,6 @@ const gameRooms = [];
 // };
 
 io.on("connection", (socket) => {
-  const redisClient = redis.createClient()
   console.log(`${socket.id} connected`);
 
   socket.on('DISCONNECT', () => socket.disconnect(true))
