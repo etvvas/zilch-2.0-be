@@ -7,6 +7,8 @@ const io = require("socket.io")(httpServer, {
 });
 const gameRooms = [];
 
+//placeholder comment
+
 // const gameRoom = {
 //   players: [],
 //   roomName: "",
