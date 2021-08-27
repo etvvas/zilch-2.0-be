@@ -41,6 +41,7 @@ io.on("connection", (socket) => {
   //AND any time there is an update
   socket.on("JOIN_ROOM", ({userId, username, avatar}, roomName) => {
 
+    let room;
     if(!gameRooms.find(room => room.roomName === roomName)) {
       gameRooms.push({
         ready: [],
@@ -61,11 +62,13 @@ io.on("connection", (socket) => {
       });
       io.emit('ENTER_LOBBY', gameRooms)
 
-      socket.join(roomName);
+      room = gameRooms.find(room => room.roomName === roomName)
+
+      socket.join(room.roomName);
 
     } else {
 
-      const room = gameRooms.find(room => room.roomName === roomName)
+      room = gameRooms.find(room => room.roomName === roomName)
 
       if (room.players.length === 1) {
         room.players.push(userId)
@@ -80,7 +83,7 @@ io.on("connection", (socket) => {
           playerUberZilches: 0,
         }
 
-        socket.join(roomName);
+        socket.join(room.roomName);
         io.emit('ENTER_LOBBY', gameRooms)
 
       } else {
@@ -88,19 +91,22 @@ io.on("connection", (socket) => {
         socket.emit('FULL_ROOM')
       }
     }
+    socket.on('PLAYER_READY',
+    //  randomize who goes first
+    () => {
+      room.ready.push(userId)
+      if(room.ready.length <= 2) {
+        // alert users that game is starting
+      io.to(room.roomName).emit('START_GAME', `${username} is ready`)
+    }
+    })
+    
+    // const currentRoom = gameRooms.find(gameRoom => gameRoom.roomName === room)
+    
   });
 
-  socket.on('PLAYER_READY',
-  // Ready buttons
-  // ready: [] -> if length === 2 , start game
-    (userId, room) => {
-      const currentRoom = gameRooms.find(gameRoom => gameRoom.roomName === room)
-      console.log('currentRoom', currentRoom);
-      currentRoom.ready.push(userId)
-      if(currentRoom.ready.length === 2 ) {
-        io.to([currentRoom.roomName]).emit('START_GAME', 'Ready to play!')
-      }
-    }
+  
+    
   // initialize game (/api/v1/startgame)
   // randomize first player
   // currentPlayer = room.players[userIndex]
@@ -109,15 +115,13 @@ io.on("connection", (socket) => {
 
 
   
-  )
+  
 
   socket.on('disconnect', () => {
 
     console.log(socket.id, 'disconnected');
 
   })
-
-
 });
 
 const PORT = process.env.PORT || 7890;
