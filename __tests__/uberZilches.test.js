@@ -3,7 +3,7 @@ const setup = require('../data/setup.js');
 const request = require('supertest');
 const app = require('../lib/app.js');
 
-describe('zilches routes', () => {
+describe('uber zilches routes', () => {
   beforeEach(() => {
     return setup(pool);
   });
@@ -16,35 +16,33 @@ describe('zilches routes', () => {
     avatar: 'Avatar.png'
   };
 
-  const zilchesOne = {
+  const uberZilchOne = {
     gameId: '1',
     userId: '1',
-    playerZilches: 2
+    playerUberZilches: 1
   }
 
-  const zilchesTwo = {
+  const uberZilchTwo = {
     gameId: '1',
     userId: '2',
-    numberOfRounds: 5,
-    playerZilches: 0
+    playerUberZilches: 1
   }
 
-  test('creates zilches per game via POST', async () => {
+  it('create UBER zilch via POST', async () => {
     const { body } = await agent
       .post('/api/v1/signup')
       .send(user);
 
     const res = await agent
-      .post('/api/v1/zilches')
-      .send(zilchesOne);
-
-    console.log('DATA', new Date())
+      .post('/api/v1/uberZilches')
+      .send(uberZilchOne);
 
     expect(res.body).toEqual({
-      zilchId: '1',
+      uberZilchId: '1',
       gameId: '1',
       userId: '1',
-      playerZilches: 2
-    });
-  });
-});
+      playerUberZilches: 1
+    })
+  })
+
+})

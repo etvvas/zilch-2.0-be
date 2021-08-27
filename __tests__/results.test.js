@@ -17,14 +17,14 @@ describe('results routes', () => {
 
   const resultsOne = {
     gameId: '1',
-    userId:'1',
+    userId: '1',
     numberOfRounds: 5,
     playerScore: 300
   }
 
   const resultsTwo = {
     gameId: '1',
-    userId:'2',
+    userId: '2',
     numberOfRounds: 5,
     playerScore: 500
   }
@@ -41,7 +41,7 @@ describe('results routes', () => {
     expect(res.body).toEqual({
       resultId: '1',
       gameId: '1',
-      userId:'1',
+      userId: '1',
       numberOfRounds: 5,
       playerScore: 300
     });
