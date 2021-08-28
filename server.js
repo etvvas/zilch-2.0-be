@@ -107,21 +107,6 @@ io.on("connection", (socket) => {
         socket.emit('FULL_ROOM')
       }
     }
-    socket.on('PLAYER_READY',
-      //  randomize who goes first
-      async () => {
-        console.log('yooooo')
-        const room = await getGameData(redisClient, roomName)
-        console.log('READY', room)
-        // room.push(userId)
-        // if (room.ready.length <= 2) {
-        //   // alert users that game is starting
-        //   io.to(room.roomName).emit('READY', username)
-        // }
-      })
-
-    // const currentRoom = gameRooms.find(gameRoom => gameRoom.roomName === room)
-
   });
 
   socket.on('PLAYER_READY',
