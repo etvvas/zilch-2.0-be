@@ -24,10 +24,10 @@
     "@types/pg": "^8.6.1",
     "eslint": "^7.32.0",
     "jest": "^27.0.6",
-    "morgan": "^1.10.0",
     "nodemon": "^2.0.12",
     "prettier": "^2.3.2",
-    "supertest": "^6.1.6"
+    "supertest": "^6.1.6",
+    "redis-mock": "^0.56.3"
   },
   "dependencies": {
     "@socket.io/admin-ui": "^0.2.0",
@@ -40,7 +40,6 @@
     "jsonwebtoken": "^8.5.1",
     "pg": "^8.7.1",
     "redis": "^3.1.2",
-    "redis-mock": "^0.56.3",
     "socket.io": "^4.1.3"
   }
 }

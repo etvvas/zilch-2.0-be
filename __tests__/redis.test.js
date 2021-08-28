@@ -11,13 +11,12 @@ let set;
 
 describe('tests redis functions', () => {
   beforeEach(() => {
-    redisClient = redis.createClient(6379, '127.0.0.1')
+    redisClient = redis.createClient()
     redisClient.flushall('ASYNC', function (err) {
       console.log(err)
     })
     set = promisify(redisClient.set).bind(redisClient)
     get = promisify(redisClient.get).bind(redisClient)
-
   })
 
   // afterEach(() => {
