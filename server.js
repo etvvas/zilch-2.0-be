@@ -12,10 +12,10 @@ io.on("connection", (socket) => {
   console.log(`${socket.id} connected`);
 
   //deployed
-  // const redisClient = redis.createClient(process.env.REDIS_URL)
+  const redisClient = redis.createClient(process.env.REDIS_URL)
 
   // local
-  const redisClient = redis.createClient()
+  // const redisClient = redis.createClient()
 
   // get all rooms data;
 
@@ -116,9 +116,6 @@ io.on("connection", (socket) => {
   // currentPlayer = room.players[userIndex]
   // userIndex is random number initially
   // userIndex = ++userIndex % 2;
-
-
-
   // )
 
   socket.on('disconnect', () => {

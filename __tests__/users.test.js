@@ -45,7 +45,6 @@ describe('users routes', () => {
       timestampStart: '1:50',
       targetScore: 5000
     })
-    console.log("USER ONE", userOne)
 
     const userGame = { userId: user1.body.userId, gameId: game.gameId }
 
@@ -210,7 +209,6 @@ describe('users routes', () => {
       gameId: uberZilch1.gameId,
       uberZilchId: uberZilch1.uberZilchId
     });
-    console.log('UZ 1', userUberZilch1)
     const userUberZilch2 = await UserUberZilches.insert({
       userId: '1',
       gameId: uberZilch2.gameId,
