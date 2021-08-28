@@ -7,35 +7,6 @@ const io = require("socket.io")(httpServer, {
 });
 const { setGameData, getGameData } = require('./lib/utils/redis.js')
 
-const gameRooms = [];
-
-//placeholder comment
-
-// const gameRoom = {
-//   players: [],
-//   roomName: "",
-//   rounds: 0,
-//   winner: "",
-//   timeStampStart: "",
-//   timeStampEnd: "",
-//   targetScore: "",
-//   firstUser: {
-//     userId: "",
-//     gameId: "",
-//     numberOfRound: 0,
-//     playerScore: 0,
-//     playerZilches: 0,
-//     playerUberZilches: 0,
-//   },
-//   secondUser: {
-//     userId: "",
-//     gameId: "",
-//     numberOfRound: 0,
-//     playerScore: 0,
-//     playerZilches: 0,
-//     playerUberZilches: 0,
-//   },
-// };
 
 io.on("connection", (socket) => {
   console.log(`${socket.id} connected`);
@@ -59,6 +30,7 @@ io.on("connection", (socket) => {
     if (!matchingRoom) {
       matchingRoom = {
         [roomName]: {
+
           ready: [],
           players: [userId],
           roomName: roomName,
@@ -79,13 +51,11 @@ io.on("connection", (socket) => {
 
       await setGameData(redisClient, roomName, matchingRoom)
       // io.emit('ENTER_LOBBY', gameRooms)
-
-      socket.join(matchingRoom[roomName]);
+      socket.emit('ROOM_JOINED', matchingRoom)
+      socket.join(matchingRoom[roomName].roomName);
 
     } else {
-
-      // let matchingRoom = await getGameData(redisClient, roomName)
-      console.log('MATCHING ROOM', matchingRoom)
+                          
       if (matchingRoom[roomName].players.length < 2) {
         matchingRoom[roomName].players.push(userId)
         matchingRoom[roomName].secondUser = {
@@ -100,8 +70,9 @@ io.on("connection", (socket) => {
         }
 
         await setGameData(redisClient, roomName, matchingRoom)
-        socket.join(matchingRoom[roomName]);
-        // io.emit('ENTER_LOBBY', gameRooms)
+        socket.join(matchingRoom[roomName].roomName);
+        io.to(matchingRoom[roomName].roomName).emit('ROOM_JOINED', matchingRoom)
+         // io.emit('ENTER_LOBBY', gameRooms)
 
       } else {
         socket.emit('FULL_ROOM')
@@ -110,7 +81,7 @@ io.on("connection", (socket) => {
     socket.on('PLAYER_READY',
       //  randomize who goes first
       async () => {
-        console.log('yooooo')
+        
         const room = await getGameData(redisClient, roomName)
         console.log('READY', room)
         // room.push(userId)
