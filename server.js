@@ -14,10 +14,10 @@ io.on("connection", (socket) => {
   console.log(`${socket.id} connected`);
 
   //deployed
-  // const redisClient = redis.createClient(process.env.REDIS_URL)
+  const redisClient = redis.createClient(process.env.REDIS_URL)
 
   // local
-  const redisClient = redis.createClient()
+  // const redisClient = redis.createClient()
 
   // get all rooms data;
 
@@ -58,7 +58,7 @@ io.on("connection", (socket) => {
       socket.join(matchingRoom[roomName].roomName);
 
     } else {
-                          
+
       if (matchingRoom[roomName].players.length < 2) {
         matchingRoom[roomName].players.push(userId)
         matchingRoom[roomName].secondUser = {
@@ -71,53 +71,53 @@ io.on("connection", (socket) => {
           playerZilches: 0,
           playerUberZilches: 0,
         }
-//
+        //
         await setGameData(redisClient, roomName, matchingRoom)
         socket.join(matchingRoom[roomName].roomName);
         io.to(matchingRoom[roomName].roomName).emit('ROOM_JOINED', matchingRoom)
-         // io.emit('ENTER_LOBBY', gameRooms)
+        // io.emit('ENTER_LOBBY', gameRooms)
 
       } else {
         socket.emit('FULL_ROOM')
       }
     }
 
-  socket.on('PLAYER_READY',
-    // Ready buttons
-    // ready: [] -> if length === 2 , start game
-    async (room) => {
-      const matchingRoom = await getGameData(redisClient, room)
+    socket.on('PLAYER_READY',
+      // Ready buttons
+      // ready: [] -> if length === 2 , start game
+      async (room) => {
+        const matchingRoom = await getGameData(redisClient, room)
 
-      //post game to db
-      const postGame = await GameService.initializeGame({
-        firstUserId: matchingRoom[roomName].firstUser.userId, 
-        secondUserId: matchingRoom[roomName].secondUser.userId,
-        timestampStart: moment().format(), 
-        targetScore: matchingRoom[roomName].targetScore
+        //post game to db
+        const postGame = await GameService.initializeGame({
+          firstUserId: matchingRoom[roomName].firstUser.userId,
+          secondUserId: matchingRoom[roomName].secondUser.userId,
+          timestampStart: moment().format(),
+          targetScore: matchingRoom[roomName].targetScore
+        })
+
+        //set user index
+        if (Math.random() < 0.5) {
+          matchingRoom[roomName].currentPlayerIndex = 0
+        } matchingRoom[roomName].currentPlayerIndex = 1
+
+        console.log(matchingRoom[roomName])
       })
 
-      //set user index
-      if(Math.random() < 0.5) {
-        matchingRoom[roomName].currentPlayerIndex = 0
-      } matchingRoom[roomName].currentPlayerIndex = 1
- 
-      console.log(matchingRoom[roomName])
+    // initialize game (/api/v1/startgame)
+    // randomize first player
+    // currentPlayer = room.players[userIndex]
+    // userIndex is random number initially
+    // userIndex = ++userIndex % 2;
+    // )
+
+    socket.on('disconnect', () => {
+      // remove room from redis
+
+      console.log(socket.id, 'disconnected');
+      redisClient.end(true)
     })
-
-  // initialize game (/api/v1/startgame)
-  // randomize first player
-  // currentPlayer = room.players[userIndex]
-  // userIndex is random number initially
-  // userIndex = ++userIndex % 2;
-  // )
-
-  socket.on('disconnect', () => {
-    // remove room from redis
-
-    console.log(socket.id, 'disconnected');
-    redisClient.end(true)
-  })
-});
+  });
 });
 
 const PORT = process.env.PORT || 7890;
