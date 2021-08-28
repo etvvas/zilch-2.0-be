@@ -14,10 +14,10 @@ io.on("connection", (socket) => {
   console.log(`${socket.id} connected`);
 
   //deployed
-  const redisClient = redis.createClient(process.env.REDIS_URL)
+  // const redisClient = redis.createClient(process.env.REDIS_URL)
 
   // local
-  // const redisClient = redis.createClient()
+  const redisClient = redis.createClient()
 
   // get all rooms data;
 
