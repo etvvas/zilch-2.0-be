@@ -32,7 +32,6 @@ io.on("connection", (socket) => {
     if (!matchingRoom) {
       matchingRoom = {
         [roomName]: {
-
           ready: [],
           currentPlayerIndex: 0,
           players: [userId],
@@ -58,7 +57,7 @@ io.on("connection", (socket) => {
       socket.join(matchingRoom[roomName].roomName);
 
     } else {
-                          
+
       if (matchingRoom[roomName].players.length < 2) {
         matchingRoom[roomName].players.push(userId)
         matchingRoom[roomName].secondUser = {
@@ -71,53 +70,65 @@ io.on("connection", (socket) => {
           playerZilches: 0,
           playerUberZilches: 0,
         }
-//
+        //
         await setGameData(redisClient, roomName, matchingRoom)
         socket.join(matchingRoom[roomName].roomName);
         io.to(matchingRoom[roomName].roomName).emit('ROOM_JOINED', matchingRoom)
-         // io.emit('ENTER_LOBBY', gameRooms)
+        // io.emit('ENTER_LOBBY', gameRooms)
 
       } else {
         socket.emit('FULL_ROOM')
       }
     }
 
-  socket.on('PLAYER_READY',
-    // Ready buttons
-    // ready: [] -> if length === 2 , start game
-    async (room) => {
-      const matchingRoom = await getGameData(redisClient, room)
+    socket.on('PLAYER_READY',
+      // Ready buttons
+      // ready: [] -> if length === 2 , start game
+      async (roomName, userId) => {
+        const matchingRoom = await getGameData(redisClient, roomName)
+        matchingRoom[roomName].ready.push(userId)
+        await setGameData(redisClient, roomName, matchingRoom)
+        //post game to db
+        // // // // // // // // // // // 
+        
+        // // // // // // // // // // 
 
-      //post game to db
-      const postGame = await GameService.initializeGame({
-        firstUserId: matchingRoom[roomName].firstUser.userId, 
-        secondUserId: matchingRoom[roomName].secondUser.userId,
-        timestampStart: moment().format(), 
-        targetScore: matchingRoom[roomName].targetScore
+        //set user index
+        // if (Math.random() < 0.5) {
+        //   matchingRoom[roomName].currentPlayerIndex = 0
+        // } matchingRoom[roomName].currentPlayerIndex = 1
+        if(matchingRoom[roomName].ready.length > 1) {
+
+          socket.emit('START_GAME', matchingRoom)
+          const {newGame} = await GameService.initializeGame({
+          firstUserId: matchingRoom[roomName].firstUser.userId,
+          secondUserId: matchingRoom[roomName].secondUser.userId,
+          timestampStart: moment().format(),
+          targetScore: matchingRoom[roomName].targetScore
+        })
+        console.log(newGame);
+        matchingRoom[roomName].gameId = newGame.gameId
+        console.log(matchingRoom[roomName]);
+
+        }
       })
 
-      //set user index
-      if(Math.random() < 0.5) {
-        matchingRoom[roomName].currentPlayerIndex = 0
-      } matchingRoom[roomName].currentPlayerIndex = 1
- 
-      console.log(matchingRoom[roomName])
+     
+
+    // initialize game (/api/v1/startgame)
+    // randomize first player
+    // currentPlayer = room.players[userIndex]
+    // userIndex is random number initially
+    // userIndex = ++userIndex % 2;
+    // )
+
+    socket.on('disconnect', () => {
+      // remove room from redis
+
+      console.log(socket.id, 'disconnected');
+      redisClient.end(true)
     })
-
-  // initialize game (/api/v1/startgame)
-  // randomize first player
-  // currentPlayer = room.players[userIndex]
-  // userIndex is random number initially
-  // userIndex = ++userIndex % 2;
-  // )
-
-  socket.on('disconnect', () => {
-    // remove room from redis
-
-    console.log(socket.id, 'disconnected');
-    redisClient.end(true)
-  })
-});
+  });
 });
 
 const PORT = process.env.PORT || 7890;
