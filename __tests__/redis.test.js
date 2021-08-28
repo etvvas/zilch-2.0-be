@@ -4,7 +4,8 @@ const {
   setGameData,
   getGameData,
   getAllRooms,
-  getAllRoomData } = require('../lib/utils/redis.js')
+  getAllRoomData,
+  deleteRoom } = require('../lib/utils/redis.js')
 const app = require('../lib/app.js')
 const request = require('supertest')
 
@@ -100,10 +101,26 @@ describe('tests redis functions', () => {
     await setGameData(redisClient, 'room1', { room: 'fakeroom' })
     await setGameData(redisClient, 'ROOM1', { room: 'fakeroom' })
 
-    const roomsArray = await getAllRooms(redisClient)
-
-    const roomData = await getAllRoomData(redisClient, roomsArray)
+    const roomData = await getAllRoomData(redisClient, await getAllRooms(redisClient))
 
     expect(roomData).toEqual([{ room: 'room1' }, { room: 'room2' }, { room: 'room3' }])
+  })
+
+  it('deletes a room', async () => {
+    await setGameData(redisClient, 'Room1', { room: 'room1' })
+    await setGameData(redisClient, 'Room2', { room: 'room2' })
+    await setGameData(redisClient, 'Room3', { room: 'room3' })
+
+    const deletedRoom = await deleteRoom(redisClient, 'Room1')
+
+    expect(deletedRoom).toBe(1)
+
+    const getDeletedRoom = await getGameData(redisClient, 'Room1')
+
+    expect(getDeletedRoom).toBeNull()
+
+    const roomsArray = await getAllRooms(redisClient)
+
+    expect(roomsArray).toEqual(['Room2', 'Room3'])
   })
 })
