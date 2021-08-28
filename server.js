@@ -96,13 +96,12 @@ io.on("connection", (socket) => {
         targetScore: matchingRoom[roomName].targetScore
       })
 
-        console.log(postGame);
-
       //set user index
-      // if(Math.random() < 0.5) {
-      //   matchingRoom[roomName].userIndex = 0
-      // } matchingRoom[roomName].userIndex = 1
+      if(Math.random() < 0.5) {
+        matchingRoom[roomName].currentPlayerIndex = 0
+      } matchingRoom[roomName].currentPlayerIndex = 1
  
+      console.log(matchingRoom[roomName])
     })
 
   // initialize game (/api/v1/startgame)
