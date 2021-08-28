@@ -32,7 +32,6 @@ io.on("connection", (socket) => {
     if (!matchingRoom) {
       matchingRoom = {
         [roomName]: {
-
           ready: [],
           currentPlayerIndex: 0,
           players: [userId],
@@ -85,24 +84,36 @@ io.on("connection", (socket) => {
     socket.on('PLAYER_READY',
       // Ready buttons
       // ready: [] -> if length === 2 , start game
-      async (room) => {
-        const matchingRoom = await getGameData(redisClient, room)
-
+      async (roomName, userId) => {
+        const matchingRoom = await getGameData(redisClient, roomName)
+        matchingRoom[roomName].ready.push(userId)
+        await setGameData(redisClient, roomName, matchingRoom)
         //post game to db
-        const postGame = await GameService.initializeGame({
+        // // // // // // // // // // // 
+        
+        // // // // // // // // // // 
+
+        //set user index
+        // if (Math.random() < 0.5) {
+        //   matchingRoom[roomName].currentPlayerIndex = 0
+        // } matchingRoom[roomName].currentPlayerIndex = 1
+        if(matchingRoom[roomName].ready.length > 1) {
+
+          socket.emit('START_GAME', matchingRoom)
+          const {newGame} = await GameService.initializeGame({
           firstUserId: matchingRoom[roomName].firstUser.userId,
           secondUserId: matchingRoom[roomName].secondUser.userId,
           timestampStart: moment().format(),
           targetScore: matchingRoom[roomName].targetScore
         })
+        console.log(newGame);
+        matchingRoom[roomName].gameId = newGame.gameId
+        console.log(matchingRoom[roomName]);
 
-        //set user index
-        if (Math.random() < 0.5) {
-          matchingRoom[roomName].currentPlayerIndex = 0
-        } matchingRoom[roomName].currentPlayerIndex = 1
-
-        console.log(matchingRoom[roomName])
+        }
       })
+
+     
 
     // initialize game (/api/v1/startgame)
     // randomize first player
