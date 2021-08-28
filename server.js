@@ -68,7 +68,7 @@ io.on("connection", (socket) => {
           playerZilches: 0,
           playerUberZilches: 0,
         }
-
+//
         await setGameData(redisClient, roomName, matchingRoom)
         socket.join(matchingRoom[roomName].roomName);
         io.to(matchingRoom[roomName].roomName).emit('ROOM_JOINED', matchingRoom)
