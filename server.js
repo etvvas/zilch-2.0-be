@@ -88,6 +88,8 @@ io.on("connection", (socket) => {
         const matchingRoom = await getGameData(redisClient, roomName)
         matchingRoom[roomName].ready.push(userId)
         await setGameData(redisClient, roomName, matchingRoom)
+
+        io.to(roomName).emit('READY', matchingRoom)
         //post game to db
         // // // // // // // // // // // 
         
@@ -99,7 +101,7 @@ io.on("connection", (socket) => {
         // } matchingRoom[roomName].currentPlayerIndex = 1
         if(matchingRoom[roomName].ready.length > 1) {
 
-          socket.emit('START_GAME', matchingRoom)
+          io.to(roomName).emit('START_GAME', matchingRoom)
           const {newGame} = await GameService.initializeGame({
           firstUserId: matchingRoom[roomName].firstUser.userId,
           secondUserId: matchingRoom[roomName].secondUser.userId,
