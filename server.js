@@ -130,9 +130,6 @@ io.on("connection", (socket) => {
   // currentPlayer = room.players[userIndex]
   // userIndex is random number initially
   // userIndex = ++userIndex % 2;
-
-
-
   // )
 
   socket.on('disconnect', () => {

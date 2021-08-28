@@ -117,7 +117,6 @@ describe('Games tests', () => {
         secondUserId: user2Res.body.userId
       })
 
-    console.log('NEW GAME', newGame.body.newGame)
 
     gameData = newGame.body.newGame;
 
@@ -141,8 +140,6 @@ describe('Games tests', () => {
       playerZilches: 4,
       playerUberZilches: 1
     }
-
-    console.log(gameData)
 
     const { body } = await agent
       .post('/api/v1/games/end-game')
