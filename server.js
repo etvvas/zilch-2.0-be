@@ -6,39 +6,6 @@ const pool = require("./lib/utils/pool.js");
 const io = require("socket.io")(httpServer, {
   cors: true
 });
-<<<<<<< HEAD
-const gameRooms = [];
-
-//placeholder comment
-
-// const gameRoom = {
-//   players: [],
-//   roomName: "",
-//   rounds: 0,
-//   winner: "",
-//   timeStampStart: "",
-//   timeStampEnd: "",
-//   targetScore: "",
-//   firstUser: {
-//     userId: "",
-//     gameId: "",
-//     numberOfRound: 0,
-//     playerScore: 0,
-//     playerZilches: 0,
-//     playerUberZilches: 0,
-//   },
-//   secondUser: {
-//     userId: "",
-//     gameId: "",
-//     numberOfRound: 0,
-//     playerScore: 0,
-//     playerZilches: 0,
-//     playerUberZilches: 0,
-//   },
-// };
-
-io.on("connection", (socket) => {
-=======
 const { setGameData, getGameData, getAllRoomData, getAllRooms, deleteRoom } = require('./lib/utils/redis.js');
 const moment = require('moment');
 
@@ -64,7 +31,6 @@ const joinLobby = async (socket, redisClient) => {
 //Send only nec pieces of state change or entire game object?
 /////
 io.on("connection", async (socket) => {
->>>>>>> 0897cf509d04d14985361b2a425ed53bb3e2b90a
   console.log(`${socket.id} connected`);
   let currentUserId;
   let currentRoomName;
@@ -87,27 +53,6 @@ io.on("connection", async (socket) => {
 
   //get game room data on initial entry
   //AND any time there is an update
-<<<<<<< HEAD
-  socket.on("JOIN_ROOM", ({ userId, username, avatar }, roomName) => {
-
-    let room;
-    if(!gameRooms.find(room => room.roomName === roomName)) {
-      gameRooms.push({
-        ready: [],
-        players: [userId],
-        roomName: roomName,
-        rounds: 0,
-        targetScore: 5000,
-        firstUser: {
-          userName: username,
-          userId: userId,
-          avatar: avatar,
-          gameId: "",
-          numberOfRound: 0,
-          playerScore: 0,
-          playerZilches: 0,
-          playerUberZilches: 0,
-=======
   socket.on("JOIN_ROOM", async ({ userId, username, avatar }, roomName) => {
     //Check for matching in redis db
     let matchingRoom = await getGameData(redisClient, roomName)
@@ -136,7 +81,6 @@ io.on("connection", async (socket) => {
             playerZilches: 0,
             playerUberZilches: 0,
           }
->>>>>>> 0897cf509d04d14985361b2a425ed53bb3e2b90a
         }
       };
 
