@@ -95,23 +95,25 @@ io.on("connection", (socket) => {
         
         // // // // // // // // // // 
 
-        //set user index
-        // if (Math.random() < 0.5) {
-        //   matchingRoom[roomName].currentPlayerIndex = 0
-        // } matchingRoom[roomName].currentPlayerIndex = 1
         if(matchingRoom[roomName].ready.length > 1) {
+          
+          const {newGame} = await GameService.initializeGame({
+            firstUserId: matchingRoom[roomName].firstUser.userId,
+            secondUserId: matchingRoom[roomName].secondUser.userId,
+            timestampStart: moment().format(),
+            targetScore: matchingRoom[roomName].targetScore
+          })
+
+          //set user index
+          if (Math.random() < 0.5) {
+            matchingRoom[roomName].currentPlayerIndex = 0;
+          } matchingRoom[roomName].currentPlayerIndex = 1;
+        
+          matchingRoom[roomName].firstUser.gameId = newGame.gameId;
+          matchingRoom[roomName].secondUser.gameId = newGame.gameId;
+          matchingRoom[roomName].gameId = newGame.gameId;
 
           io.to(roomName).emit('START_GAME', matchingRoom)
-          const {newGame} = await GameService.initializeGame({
-          firstUserId: matchingRoom[roomName].firstUser.userId,
-          secondUserId: matchingRoom[roomName].secondUser.userId,
-          timestampStart: moment().format(),
-          targetScore: matchingRoom[roomName].targetScore
-        })
-        console.log(newGame);
-        matchingRoom[roomName].gameId = newGame.gameId
-        console.log(matchingRoom[roomName]);
-
         }
       })
 
