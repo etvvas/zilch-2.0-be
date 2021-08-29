@@ -8,7 +8,9 @@ const io = require("socket.io")(httpServer, {
 });
 const { setGameData, getGameData, getAllRoomData, getAllRooms, deleteRoom } = require('./lib/utils/redis.js');
 const moment = require('moment');
-const { disconnect } = require('process');
+
+const { roll, initializeDice } = require('./lib/utils/gameLogic.js')
+
 
 const updateLobby = async (redisClient) => {
   const allGames = await getAllRoomData(redisClient, await getAllRooms(redisClient))
@@ -137,9 +139,24 @@ io.on("connection", async (socket) => {
           matchingRoom[roomName].secondUser.gameId = newGame.gameId;
           matchingRoom[roomName].gameId = newGame.gameId;
 
+          await setGameData(redisClient, roomName, matchingRoom)
+
           io.to(roomName).emit('START_GAME', matchingRoom)
         }
       })
+
+    socket.on('ROLL', () => {
+      const dice = initializeDice()
+      socket.emit('ROLLED', dice)
+    })
+
+    socket.on('BANK', async () => {
+      const currentGameState = await getGameData(redisClient, roomName)
+      console.log(currentGameState)
+      currentGameState[roomName].currentPlayerIndex == 0 ? currentGameState[roomName].currentPlayerIndex = 1 : currentGameState[roomName].currentPlayerIndex = 0
+      await setGameData(redisClient, roomName, currentGameState)
+      io.to(roomName).emit('BANKED', currentGameState)
+    })
 
     socket.on('disconnect', async () => {
       // remove room from redis
