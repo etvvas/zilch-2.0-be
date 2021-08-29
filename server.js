@@ -6,11 +6,20 @@ const pool = require("./lib/utils/pool.js");
 const io = require("socket.io")(httpServer, {
   cors: true
 });
-const { setGameData, getGameData } = require('./lib/utils/redis.js');
+const { setGameData, getGameData, getAllRoomData, getAllRooms } = require('./lib/utils/redis.js');
 const moment = require('moment');
 
+const updateLobby = async (redisClient) => {
+  const allGames = await getAllRoomData(redisClient, await getAllRooms(redisClient))
+  io.emit('UPDATE_LOBBY', allGames)
+}
+const joinLobby = async (socket, redisClient) => {
+  const allGames = await getAllRoomData(redisClient, await getAllRooms(redisClient))
+  socket.emit('UPDATE_LOBBY', allGames)
+}
 
-io.on("connection", (socket) => {
+
+io.on("connection", async (socket) => {
   console.log(`${socket.id} connected`);
 
   //deployed
@@ -20,10 +29,14 @@ io.on("connection", (socket) => {
   const redisClient = redis.createClient()
 
   // get all rooms data;
+  await joinLobby(socket, redisClient)
+  
+  socket.on('DISCONNECT', () =>{ 
+    socket.disconnect(true)
+    console.log('DISCONNECT', socket.disconnected);
+  })
 
-  socket.on('DISCONNECT', () => socket.disconnect(true))
 
-  // socket.emit('ENTER_LOBBY', gameRooms)
   //get game room data on initial entry
   //AND any time there is an update
   socket.on("JOIN_ROOM", async ({ userId, username, avatar }, roomName) => {
@@ -55,6 +68,7 @@ io.on("connection", (socket) => {
       // io.emit('ENTER_LOBBY', gameRooms)
       socket.emit('ROOM_JOINED', matchingRoom)
       socket.join(matchingRoom[roomName].roomName);
+      await updateLobby(redisClient)
 
     } else {
 
@@ -74,6 +88,7 @@ io.on("connection", (socket) => {
         await setGameData(redisClient, roomName, matchingRoom)
         socket.join(matchingRoom[roomName].roomName);
         io.to(matchingRoom[roomName].roomName).emit('ROOM_JOINED', matchingRoom)
+        await updateLobby(redisClient)
         // io.emit('ENTER_LOBBY', gameRooms)
 
       } else {
