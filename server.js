@@ -20,7 +20,16 @@ const joinLobby = async (socket, redisClient) => {
   const allGames = await getAllRoomData(redisClient, await getAllRooms(redisClient))
   socket.emit('UPDATE_LOBBY', allGames)
 }
+///////////////////////////////////
+//Set game object to redis after each change
+//Get game object from redis on new events
+//On each turn update Lobby
+///////////////////////////////////
 
+
+/////
+//Send only nec pieces of state change or entire game object?
+/////
 io.on("connection", async (socket) => {
   console.log(`${socket.id} connected`);
   let currentUserId;
@@ -33,9 +42,11 @@ io.on("connection", async (socket) => {
   const redisClient = redis.createClient()
 
   // get all rooms data;
+  //on User entering lobby get all games from redis and send to user
   await joinLobby(socket, redisClient)
 
   socket.on('DISCONNECT', () => {
+    //disconnect socket from server on component unmount
     socket.disconnect(true)
     console.log('DISCONNECT', socket.disconnected);
   })
@@ -43,12 +54,15 @@ io.on("connection", async (socket) => {
   //get game room data on initial entry
   //AND any time there is an update
   socket.on("JOIN_ROOM", async ({ userId, username, avatar }, roomName) => {
+    //Check for matching in redis db
     let matchingRoom = await getGameData(redisClient, roomName)
 
+    //keep track of userId and roomName for disconnect event
     currentUserId = userId;
     currentRoomName = roomName;
 
     if (!matchingRoom) {
+      //If no matching room in redis, initialize a room
       matchingRoom = {
         [roomName]: {
           ready: [],
@@ -71,17 +85,20 @@ io.on("connection", async (socket) => {
       };
 
       await setGameData(redisClient, roomName, matchingRoom)
-      // io.emit('ENTER_LOBBY', gameRooms)
       socket.emit('ROOM_JOINED', matchingRoom)
-      socket.join(matchingRoom[roomName].roomName);
+      socket.join(roomName);
       await updateLobby(redisClient)
 
     } else {
+      //Does this do anything anymore???
       if (matchingRoom[roomName].players.find(player => player === userId)) {
         return
       }
+      //
       if (matchingRoom[roomName].players.length < 2) {
+        //If a room exists create second user property
         let userIdentifier;
+        //If user has left room and come back, assign their user property accordingly
         matchingRoom[roomName].secondUser ? userIdentifier = 'firstUser' : userIdentifier = 'secondUser'
         matchingRoom[roomName].players.push(userId)
         matchingRoom[roomName][userIdentifier] = {
@@ -94,13 +111,11 @@ io.on("connection", async (socket) => {
           playerZilches: 0,
           playerUberZilches: 0,
         }
-        //
-        await setGameData(redisClient, roomName, matchingRoom)
-        socket.join(matchingRoom[roomName].roomName);
-        io.to(matchingRoom[roomName].roomName).emit('ROOM_JOINED', matchingRoom)
-        await updateLobby(redisClient)
 
-        // io.emit('ENTER_LOBBY', gameRooms)
+        await setGameData(redisClient, roomName, matchingRoom)
+        socket.join(roomName);
+        io.to(roomName).emit('ROOM_JOINED', matchingRoom)
+        await updateLobby(redisClient)
 
       } else {
         socket.emit('FULL_ROOM')
@@ -108,21 +123,17 @@ io.on("connection", async (socket) => {
     }
 
     socket.on('PLAYER_READY',
-      // Ready buttons
-      // ready: [] -> if length === 2 , start game
+    //roomName and userId already accessible should probably be removed
       async (roomName, userId) => {
         const matchingRoom = await getGameData(redisClient, roomName)
         matchingRoom[roomName].ready.push(userId)
         await setGameData(redisClient, roomName, matchingRoom)
 
         io.to(roomName).emit('READY', matchingRoom)
-        //post game to db
-        // // // // // // // // // // // 
-
-        // // // // // // // // // // 
+      
 
         if (matchingRoom[roomName].ready.length > 1) {
-
+          //Posting new game to SQL db
           const { newGame } = await GameService.initializeGame({
             firstUserId: matchingRoom[roomName].firstUser.userId,
             secondUserId: matchingRoom[roomName].secondUser.userId,
@@ -135,17 +146,19 @@ io.on("connection", async (socket) => {
             matchingRoom[roomName].currentPlayerIndex = 0;
           } matchingRoom[roomName].currentPlayerIndex = 1;
 
+          //Is it nec to update all three properties now or after
           matchingRoom[roomName].firstUser.gameId = newGame.gameId;
           matchingRoom[roomName].secondUser.gameId = newGame.gameId;
           matchingRoom[roomName].gameId = newGame.gameId;
 
           await setGameData(redisClient, roomName, matchingRoom)
 
-          io.to(roomName).emit('START_GAME', matchingRoom)
+          io.to(roomName).emit('START_GAME', matchingRoom, matchingRoom[roomName].currentPlayerIndex,  matchingRoom[roomName].players)
         }
       })
 
     socket.on('ROLL', () => {
+      //initialize die array that will be passed around per turn
       const dice = initializeDice()
       socket.emit('ROLLED', dice)
     })
@@ -155,22 +168,26 @@ io.on("connection", async (socket) => {
       console.log(currentGameState)
       currentGameState[roomName].currentPlayerIndex == 0 ? currentGameState[roomName].currentPlayerIndex = 1 : currentGameState[roomName].currentPlayerIndex = 0
       await setGameData(redisClient, roomName, currentGameState)
-      io.to(roomName).emit('BANKED', currentGameState)
+      io.to(roomName).emit('BANKED', currentGameState, currentGameState[roomName].currentPlayerIndex,  currentGameState[roomName].players)
     })
 
     socket.on('disconnect', async () => {
       // remove room from redis
       const roomData = await getGameData(redisClient, currentRoomName)
-
+      //On disconnect remove player from players array
       const updatedRoomData = roomData?.[currentRoomName].players.filter(playerId => playerId !== currentUserId)
-
+      
       if (updatedRoomData.length == 0) {
+        //If no players in player array remove room
         await deleteRoom(redisClient, currentRoomName)
         await updateLobby(redisClient)
       } else {
+        //If players in player array, update player array, and remove either firstUser or secondUser from game Object
         roomData[currentRoomName].players = updatedRoomData
         let matchingUser;
+        //Check if user is first or second
         (roomData[currentRoomName].firstUser.userId === currentUserId) ? matchingUser = 'firstUser' : matchingUser = 'secondUser';
+        //delete first or second from game room Object
         delete roomData[currentRoomName][matchingUser]
         await setGameData(redisClient, currentRoomName, roomData)
         await updateLobby(redisClient)
