@@ -65,7 +65,7 @@ io.on("connection", async (socket) => {
   socket.on("DISCONNECT", () => {
     //disconnect socket from server on component unmount
     socket.disconnect(true);
-    redisClient.end(true);
+   
   });
 
   //get game room data on initial entry
@@ -222,7 +222,7 @@ io.on("connection", async (socket) => {
       currentGameState[roomName].currentPlayerIndex == 0
         ? (currentGameState[roomName].currentPlayerIndex = 1)
         : (currentGameState[roomName].currentPlayerIndex = 0);
-
+ console.log(currentGameState[roomName]);
       await setGameData(redisClient, roomName, currentGameState);
 
       io.to(roomName).emit(
