@@ -1,4 +1,4 @@
-const { roll, initializeDice, reduceDice, threeDie } = require('../lib/utils/gameLogic.js')
+const { roll, initializeDice, reduceDice, displayScoringOptions } = require('../lib/utils/gameLogic.js')
 
 describe('tests game logic functions', () => {
   it('initializes dice array', async () => {
@@ -8,59 +8,85 @@ describe('tests game logic functions', () => {
     expect(sixDice).toEqual(expect.arrayContaining([{ held: false, value: expect.any(Number) }]))
   })
 
-const diceOne = [
-      {
-        held: true,
-        value: 4
-      },
-      {
-        held: false,
-        value: 1
-      },
-      {
-        held: true,
-        value: 2
-      },
-      {
-        held: false,
-        value: 5
-      },
-      {
-        held: false,
-        value: 5
-      },
-      {
-        held: false,
-        value: 5
-      },
-    ]
+  const diceOne = [
+    {
+      held: true,
+      value: 4
+    },
+    {
+      held: false,
+      value: 1
+    },
+    {
+      held: true,
+      value: 2
+    },
+    {
+      held: false,
+      value: 5
+    },
+    {
+      held: false,
+      value: 5
+    },
+    {
+      held: false,
+      value: 5
+    },
+  ]
 
-const diceTwo = [
-      {
-        held: false,
-        value: 1
-      },
-      {
-        held: false,
-        value: 1
-      },
-      {
-        held: false,
-        value: 1
-      },
-      {
-        held: false,
-        value: 4
-      },
-      {
-        held: false,
-        value: 4
-      },
-      {
-        held: false,
-        value: 4
-      },
-    ]
+  const diceTwo = [
+    {
+      held: false,
+      value: 1
+    },
+    {
+      held: false,
+      value: 1
+    },
+    {
+      held: false,
+      value: 1
+    },
+    {
+      held: false,
+      value: 4
+    },
+    {
+      held: false,
+      value: 4
+    },
+    {
+      held: false,
+      value: 4
+    },
+  ]
+  const diceThree = [
+    {
+      held: false,
+      value: 4
+    },
+    {
+      held: false,
+      value: 4
+    },
+    {
+      held: false,
+      value: 4
+    },
+    {
+      held: false,
+      value: 4
+    },
+    {
+      held: false,
+      value: 4
+    },
+    {
+      held: false,
+      value: 4
+    },
+  ]
 
   it('rerolls unheld dice and returns an intact dice array', () => {
     const newDiceArray = roll(diceOne)
@@ -88,29 +114,61 @@ const diceTwo = [
         value: expect.any(Number)
       },
       {
-        held: true,
-        value: 4
+        held: false,
+        value: expect.any(Number)
       },
     ])
   })
 
   test('testing if reduce of unheld dice provides displays number of each die', () => {
-    const output = reduceDice(diceTwo);
-    threeDie(output)
+    const output = reduceDice(diceOne);
     expect(output).toEqual({
-      '1': 3,
-      '4': 3,
-      '5': 1,
-      '6':1
-    })
-    const secondOutput = reduceDice(diceOne);
-    threeDie(secondOutput)
-    expect(secondOutput).toEqual({
       '1': 1,
-      '2': 1,
-      '5': 3,
-      '6':1
+      '5': 3
+    })
+
+    const secondOutput = reduceDice(diceTwo);
+    expect(secondOutput).toEqual({
+      '1': 3,
+      '4': 3
     })
 
   })
+
+  it('displays the scoring options from a dice roll', () => {
+    console.log(displayScoringOptions(diceTwo))
+  })
+
+  // it('takes in a dice roll and returns the three of a kind options', () => {
+  //   const firstOutput = reduceDice(diceOne)
+  //   const threeOfAKind = threeDie(firstOutput)
+
+  //   expect(threeOfAKind).toEqual([
+  //     {
+  //       title: 'Three 5\'s',
+  //       dieValue: 5,
+  //       score: 500,
+  //       numberOfDie: 3
+  //     }
+  //   ])
+
+  //   const secondOutput = reduceDice(diceTwo)
+  //   const secondThreeOfAKind = threeDie(secondOutput)
+
+  //   expect(secondThreeOfAKind).toEqual(expect.arrayContaining([
+  //     {
+  //       title: 'Three 1\'s',
+  //       dieValue: 1,
+  //       score: 1000,
+  //       numberOfDie: 3
+  //     },
+  //     {
+  //       title: 'Three 4\'s',
+  //       dieValue: 4,
+  //       score: 400,
+  //       numberOfDie: 3
+  //     }
+  //   ]))
+
+  // })
 })
