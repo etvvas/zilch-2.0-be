@@ -22,6 +22,7 @@ const {
   filterSelected,
   updateDice,
 } = require("./lib/utils/gameLogic.js");
+const { Log } = require("@tensorflow/tfjs");
 
 const updateLobby = async (redisClient) => {
   const allGames = await getAllRoomData(
@@ -85,14 +86,14 @@ io.on("connection", async (socket) => {
           currentPlayerIndex: 0,
           players: [userId],
           roomName: roomName,
-          rounds: 0,
+          rounds: 1,
           targetScore: 5000,
           firstUser: {
             userName: username,
             userId: userId,
             avatar: avatar,
             gameId: "",
-            numberOfRound: 0,
+            numberOfRounds: 0,
             playerScore: 0,
             roundScore: 0,
             playerZilches: 0,
@@ -123,7 +124,7 @@ io.on("connection", async (socket) => {
           userId: userId,
           avatar: avatar,
           gameId: "",
-          numberOfRound: 0,
+          numberOfRounds: 0,
           playerScore: 0,
           roundScore: 0,
           playerZilches: 0,
@@ -206,7 +207,18 @@ io.on("connection", async (socket) => {
     socket.on("BANK", async () => {
       const currentGameState = await getGameData(redisClient, roomName);
       delete currentGameState.dice;
+      
+      let matchingUser;
+      currentGameState[roomName].firstUser.userId === currentUserId
+        ? (matchingUser = "firstUser")
+        : (matchingUser = "secondUser");
 
+        currentGameState[roomName][matchingUser].playerScore +=  currentGameState[roomName][matchingUser].roundScore
+        currentGameState[roomName][matchingUser].roundScore = 0;
+        currentGameState[roomName][matchingUser].numberOfRounds++
+        currentGameState[roomName].rounds = Math.max(currentGameState[roomName].firstUser.numberOfRounds, currentGameState[roomName].secondUser.numberOfRounds)
+
+        console.log(currentGameState[roomName]);
       // switch current player
       currentGameState[roomName].currentPlayerIndex == 0
         ? (currentGameState[roomName].currentPlayerIndex = 1)
@@ -229,10 +241,7 @@ io.on("connection", async (socket) => {
       roomData[currentRoomName].firstUser.userId === currentUserId
         ? (matchingUser = "firstUser")
         : (matchingUser = "secondUser");
-      console.log("SELECTED OPTIONS", selectedOptions);
       roomData[roomName][matchingUser].roundScore += selectedOptions[0].score;
-      console.log('ROOM DATA', roomData[roomName])
-      // const filteredOptions = filterSelected(selectedOptions);
       const updatedDice = updateDice(roomData.dice, selectedOptions)
       roomData.dice = updatedDice
       
