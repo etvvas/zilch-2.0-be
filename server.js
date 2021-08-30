@@ -64,7 +64,7 @@ io.on("connection", async (socket) => {
   socket.on("DISCONNECT", () => {
     //disconnect socket from server on component unmount
     socket.disconnect(true);
-    console.log("DISCONNECT", socket.disconnected);
+    redisClient.end(true);
   });
 
   //get game room data on initial entry
@@ -190,13 +190,11 @@ io.on("connection", async (socket) => {
       if (!gameState.dice) {
         gameState.dice = initializeDice();
         scoringOptions = displayScoringOptions(gameState.dice);
-        console.log(scoringOptions);
         await setGameData(redisClient, roomName, gameState);
       } else {
         // reroll unheld dice
         gameState.dice = roll(gameState.dice);
         scoringOptions = displayScoringOptions(gameState.dice);
-        // console.log(scoringOptions)
         await setGameData(redisClient, roomName, gameState);
       }
 
@@ -206,7 +204,7 @@ io.on("connection", async (socket) => {
     socket.on("BANK", async () => {
       const currentGameState = await getGameData(redisClient, roomName);
       delete currentGameState.dice;
-      console.log(currentGameState);
+
       // switch current player
       currentGameState[roomName].currentPlayerIndex == 0
         ? (currentGameState[roomName].currentPlayerIndex = 1)
@@ -223,7 +221,14 @@ io.on("connection", async (socket) => {
     });
 
     socket.on("UPDATE_SELECTED", async (selectedOptions) => {
+      let matchingUser;
+
       const roomData = await getGameData(redisClient, roomName)
+      roomData[currentRoomName].firstUser.userId === currentUserId
+        ? (matchingUser = "firstUser")
+        : (matchingUser = "secondUser");
+      console.log('ROOM DATA', roomData[roomName])
+
       const filteredOptions = filterSelected(selectedOptions);
       const updateSelected = updateScoringOptions(roomData.dice, filteredOptions)
       roomData.dice = updateSelected
