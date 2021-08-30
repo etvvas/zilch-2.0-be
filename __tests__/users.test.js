@@ -178,6 +178,79 @@ describe('users routes', () => {
     ])
   })
 
+  test('outputs all WINS of a user via GET', async () => {
+
+    const user1 = await agent
+      .post('/api/v1/signup')
+      .send(userOne);
+
+    const user2 = await agent
+      .post('/api/v1/signup')
+      .send(userTwo);
+
+    const user3 = await agent
+      .post('/api/v1/signup')
+      .send(userThree);
+
+
+    const game1 = await Game.insert({
+      firstUserId: user1.body.userId.toString(),
+      secondUserId: user2.body.userId.toString(),
+      timestampStart: '1:50',
+      targetScore: 5000,
+      winner: user1.body.username
+    })
+
+    const game2 = await Game.insert({
+      firstUserId: user2.body.userId.toString(),
+      secondUserId: user1.body.userId.toString(),
+      timestampStart: '2:50',
+      targetScore: 3000,
+      winner: user1.body.username
+    })
+
+    const game3 = await Game.insert({
+      firstUserId: user2.body.userId.toString(),
+      secondUserId: user3.body.userId.toString(),
+      timestampStart: '5:00',
+      targetScore: 10000,
+      winner: user2.body.username
+    })
+
+    const userGame1 = await UserGame.insert({
+      userId: user1.body.userId,
+      gameId: game1.gameId
+    })
+
+    const userGame2 = await UserGame.insert({
+      userId: user1.body.userId,
+      gameId: game2.gameId
+    })
+
+    const userGame3 = await UserGame.insert({
+      userId: user2.body.userId,
+      gameId: game3.gameId
+    })
+
+    const res = await agent
+      .get(`/api/v1/users/${user1.body.userId}/wins`)
+      console.log('RES BODY',res.body)
+    expect(res.body).toEqual([
+      { userId: user1.body.userId,
+        username: 'username',
+        avatar: 'Avatar.png',
+        winner: 'username',
+        gameId: '1'
+      },
+      { userId: user1.body.userId,
+        username: 'username',
+        avatar: 'Avatar.png',
+        winner: 'username',
+        gameId: '2' }
+
+    ]);
+  });
+
   test('GETs all of a users uberZilches', async () => {
     const user1 = await agent
       .post('/api/v1/signup')
