@@ -1,4 +1,4 @@
-const { roll, initializeDice, displayScoringOptions } = require('../lib/utils/gameLogic.js')
+const { roll, initializeDice, displayScoringOptions, updateScoringOptions, filterSelected } = require('../lib/utils/gameLogic.js')
 
 describe('tests game logic functions', () => {
   it('initializes dice array', async () => {
@@ -232,7 +232,37 @@ describe('tests game logic functions', () => {
     console.log('THREE PAIRS', displayScoringOptions(threePairsArray));
     console.log('ZILCH!!!', displayScoringOptions(zilchArray));
   })
-
+it('tests updating scoring options', () => {
+  const selectedOptions = filterSelected([
+    {
+      score: 300,
+      choice: '3 3s: Score: 300',
+      dice: [ ['1'], ['1'], ['1'] ],
+      id: 0,
+      selected: true
+    },
+    {
+      score: 200,
+      choice: "2 1's Score: 200",
+      dice: [ ['1'], ['1'], ['1'], ['1']  ],
+      id: 1,
+      selected: true
+    },
+    {
+      score: 100,
+      choice: '1 1 Score: 100',
+      dice: [ [Object], [Object], [Object]  ],
+      id: 2,
+      selected: false
+    }
+  ])
+  const dice = initializeDice();
+  const scoringOptions = displayScoringOptions(dice)
+  console.log('DICE AND OPTIONS', dice, scoringOptions);
+  // console.log('FILTERED OPTIONS', selectedOptions);
+  // console.log('FLAT', updateScoringOptions(selectedOptions));
+  console.log('UPDATED DICE', updateScoringOptions(dice, scoringOptions));
+})
   // it('takes in a dice roll and returns the three of a kind options', () => {
   //   const firstOutput = reduceDice(diceOne)
   //   const threeOfAKind = threeDie(firstOutput)

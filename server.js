@@ -189,6 +189,11 @@ io.on("connection", async (socket) => {
       io.to(roomName).emit('BANKED', currentGameState, currentGameState[roomName].currentPlayerIndex, currentGameState[roomName].players)
     })
 
+    socket.on('UPDATE_SELECTED', (selectedOptions) => {
+      console.log('SELECTED OPTIONS', selectedOptions);
+    }
+    )
+
     socket.on('disconnect', async () => {
       // remove room from redis
       const roomData = await getGameData(redisClient, currentRoomName)
