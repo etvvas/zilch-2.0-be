@@ -173,7 +173,7 @@ io.on("connection", async (socket) => {
         await setGameData(redisClient, roomName, gameState)
       }
 
-      socket.emit('ROLLED', gameState.dice, scoringOptions)
+      io.to(roomName).emit('ROLLED', gameState.dice, scoringOptions)
     })
 
     socket.on('BANK', async () => {
