@@ -1,4 +1,4 @@
-const { roll, initializeDice } = require('../lib/utils/gameLogic.js')
+const { roll, initializeDice, reduceDice, threeDie } = require('../lib/utils/gameLogic.js')
 
 describe('tests game logic functions', () => {
   it('initializes dice array', async () => {
@@ -8,8 +8,7 @@ describe('tests game logic functions', () => {
     expect(sixDice).toEqual(expect.arrayContaining([{ held: false, value: expect.any(Number) }]))
   })
 
-  it('rerolls unheld dice and returns an intact dice array', () => {
-    const dice = [
+const diceOne = [
       {
         held: true,
         value: 4
@@ -31,12 +30,40 @@ describe('tests game logic functions', () => {
         value: 5
       },
       {
-        held: true,
+        held: false,
+        value: 5
+      },
+    ]
+
+const diceTwo = [
+      {
+        held: false,
+        value: 1
+      },
+      {
+        held: false,
+        value: 1
+      },
+      {
+        held: false,
+        value: 1
+      },
+      {
+        held: false,
+        value: 4
+      },
+      {
+        held: false,
+        value: 4
+      },
+      {
+        held: false,
         value: 4
       },
     ]
 
-    const newDiceArray = roll(dice)
+  it('rerolls unheld dice and returns an intact dice array', () => {
+    const newDiceArray = roll(diceOne)
 
     expect(newDiceArray.length).toBe(6)
     expect(newDiceArray).toEqual([
@@ -65,5 +92,25 @@ describe('tests game logic functions', () => {
         value: 4
       },
     ])
+  })
+
+  test('testing if reduce of unheld dice provides displays number of each die', () => {
+    const output = reduceDice(diceTwo);
+    threeDie(output)
+    expect(output).toEqual({
+      '1': 3,
+      '4': 3,
+      '5': 1,
+      '6':1
+    })
+    const secondOutput = reduceDice(diceOne);
+    threeDie(secondOutput)
+    expect(secondOutput).toEqual({
+      '1': 1,
+      '2': 1,
+      '5': 3,
+      '6':1
+    })
+
   })
 })
