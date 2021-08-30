@@ -251,6 +251,20 @@ describe('users routes', () => {
     ]);
   });
 
+  test('GETs all users', async () => {
+    const user1 = await agent
+      .post('/api/v1/signup')
+      .send(userOne);
+
+    const user2 = await agent
+      .post('/api/v1/signup')
+      .send(userTwo);
+
+      const res = await agent.get('/api/v1/users')
+      console.log('USERS USERS', res.body)
+      expect(res.body).toEqual([user1.body, user2.body])
+  })
+
   test('GETs all of a users uberZilches', async () => {
     const user1 = await agent
       .post('/api/v1/signup')
