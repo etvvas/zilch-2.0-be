@@ -87,6 +87,110 @@ describe('tests game logic functions', () => {
       value: 4
     },
   ]
+  const straightDice = [
+    {
+      held: false,
+      value: 1
+    },
+    {
+      held: false,
+      value: 2
+    },
+    {
+      held: false,
+      value: 3
+    },
+    {
+      held: false,
+      value: 4
+    },
+    {
+      held: false,
+      value: 5
+    },
+    {
+      held: false,
+      value: 6
+    },
+  ]
+  const fiveAndOnesArray = [
+    {
+      held: false,
+      value: 1
+    },
+    {
+      held: false,
+      value: 1
+    },
+    {
+      held: false,
+      value: 6
+    },
+    {
+      held: false,
+      value: 4
+    },
+    {
+      held: false,
+      value: 5
+    },
+    {
+      held: false,
+      value: 6
+    },
+  ]
+  const threePairsArray = [
+    {
+      held: false,
+      value: 1
+    },
+    {
+      held: false,
+      value: 1
+    },
+    {
+      held: false,
+      value: 2
+    },
+    {
+      held: false,
+      value: 2
+    },
+    {
+      held: false,
+      value: 5
+    },
+    {
+      held: false,
+      value: 5
+    },
+  ]
+  const zilchArray = [
+    {
+      held: true,
+      value: 1
+    },
+    {
+      held: true,
+      value: 1
+    },
+    {
+      held: true,
+      value: 1
+    },
+    {
+      held: false,
+      value: 6
+    },
+    {
+      held: false,
+      value: 4
+    },
+    {
+      held: false,
+      value: 2
+    },
+  ]
 
   it('rerolls unheld dice and returns an intact dice array', () => {
     const newDiceArray = roll(diceOne)
@@ -136,7 +240,11 @@ describe('tests game logic functions', () => {
   })
 
   it('displays the scoring options from a dice roll', () => {
-    console.log(displayScoringOptions(diceTwo))
+    console.log('TWO THREE OF A KIND', displayScoringOptions( diceTwo))
+    console.log('STRAIGHT DICE', displayScoringOptions(straightDice))
+    console.log('1 FIVE AND 2 ONES', displayScoringOptions(fiveAndOnesArray));
+    console.log('THREE PAIRS', displayScoringOptions(threePairsArray));
+    console.log('ZILCH!!!', displayScoringOptions(zilchArray));
   })
 
   // it('takes in a dice roll and returns the three of a kind options', () => {
