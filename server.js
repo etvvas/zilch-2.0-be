@@ -20,7 +20,7 @@ const {
   initializeDice,
   displayScoringOptions,
   filterSelected,
-  updateScoringOptions,
+  updateDice,
 } = require("./lib/utils/gameLogic.js");
 
 const updateLobby = async (redisClient) => {
@@ -94,6 +94,7 @@ io.on("connection", async (socket) => {
             gameId: "",
             numberOfRound: 0,
             playerScore: 0,
+            roundScore: 0,
             playerZilches: 0,
             playerUberZilches: 0,
           },
@@ -124,6 +125,7 @@ io.on("connection", async (socket) => {
           gameId: "",
           numberOfRound: 0,
           playerScore: 0,
+          roundScore: 0,
           playerZilches: 0,
           playerUberZilches: 0,
         };
@@ -227,19 +229,20 @@ io.on("connection", async (socket) => {
       roomData[currentRoomName].firstUser.userId === currentUserId
         ? (matchingUser = "firstUser")
         : (matchingUser = "secondUser");
-      console.log('ROOM DATA', roomData[roomName])
-
-      const filteredOptions = filterSelected(selectedOptions);
-      const updateSelected = updateScoringOptions(roomData.dice, filteredOptions)
-      roomData.dice = updateSelected
       console.log("SELECTED OPTIONS", selectedOptions);
-      const scoringOptions = displayScoringOptions(updateSelected)
+      roomData[roomName][matchingUser].roundScore += selectedOptions[0].score;
+      console.log('ROOM DATA', roomData[roomName])
+      // const filteredOptions = filterSelected(selectedOptions);
+      const updatedDice = updateDice(roomData.dice, selectedOptions)
+      roomData.dice = updatedDice
+      
+      const scoringOptions = displayScoringOptions(updatedDice)
 
       // without toggle
       await setGameData(redisClient, roomName, roomData)
 
       // with toggle, wait to setGameData on Roll or Bank
-      io.to(roomName).emit('UPDATE_SCORING_OPTIONS', updateSelected, scoringOptions)
+      io.to(roomName).emit('UPDATE_SCORING_OPTIONS', updatedDice, scoringOptions)
     });
 
     socket.on("disconnect", async () => {

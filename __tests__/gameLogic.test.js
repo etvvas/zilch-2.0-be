@@ -1,4 +1,4 @@
-const { roll, initializeDice, displayScoringOptions, updateScoringOptions, filterSelected } = require('../lib/utils/gameLogic.js')
+const { roll, initializeDice, displayScoringOptions, updateDice, filterSelected } = require('../lib/utils/gameLogic.js')
 
 describe('tests game logic functions', () => {
   it('initializes dice array', async () => {
@@ -260,8 +260,8 @@ it('tests updating scoring options', () => {
   const scoringOptions = displayScoringOptions(dice)
   console.log('DICE AND OPTIONS', dice, scoringOptions);
   // console.log('FILTERED OPTIONS', selectedOptions);
-  // console.log('FLAT', updateScoringOptions(selectedOptions));
-  console.log('UPDATED DICE', updateScoringOptions(dice, scoringOptions));
+  // console.log('FLAT', updateDice(selectedOptions));
+  console.log('UPDATED DICE', updateDice(dice, scoringOptions));
 })
   // it('takes in a dice roll and returns the three of a kind options', () => {
   //   const firstOutput = reduceDice(diceOne)
