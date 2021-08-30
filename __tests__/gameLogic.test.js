@@ -1,4 +1,4 @@
-const { roll, initializeDice, reduceDice } = require('../lib/utils/gameLogic.js')
+const { roll, initializeDice, reduceDice, threeDie } = require('../lib/utils/gameLogic.js')
 
 describe('tests game logic functions', () => {
   it('initializes dice array', async () => {
@@ -30,8 +30,8 @@ const diceOne = [
         value: 5
       },
       {
-        held: true,
-        value: 4
+        held: false,
+        value: 5
       },
     ]
 
@@ -46,7 +46,7 @@ const diceTwo = [
       },
       {
         held: false,
-        value: 6
+        value: 1
       },
       {
         held: false,
@@ -54,7 +54,7 @@ const diceTwo = [
       },
       {
         held: false,
-        value: 5
+        value: 4
       },
       {
         held: false,
@@ -96,11 +96,21 @@ const diceTwo = [
 
   test('testing if reduce of unheld dice provides displays number of each die', () => {
     const output = reduceDice(diceTwo);
+    threeDie(output)
     expect(output).toEqual({
-      '1': 2,
-      '4': 2,
+      '1': 3,
+      '4': 3,
       '5': 1,
       '6':1
     })
+    const secondOutput = reduceDice(diceOne);
+    threeDie(secondOutput)
+    expect(secondOutput).toEqual({
+      '1': 1,
+      '2': 1,
+      '5': 3,
+      '6':1
+    })
+
   })
 })
