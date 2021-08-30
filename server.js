@@ -94,9 +94,9 @@ io.on("connection", async (socket) => {
       if (matchingRoom[roomName].players.find(player => player === userId)) {
         return
       }
-      //
+      //If a room exists create second user property
       if (matchingRoom[roomName].players.length < 2) {
-        //If a room exists create second user property
+        
         let userIdentifier;
         //If user has left room and come back, assign their user property accordingly
         matchingRoom[roomName].secondUser ? userIdentifier = 'firstUser' : userIdentifier = 'secondUser'
@@ -160,13 +160,17 @@ io.on("connection", async (socket) => {
     socket.on('ROLL', async () => {
       //initialize die array that will be passed around per turn
       const gameState = await getGameData(redisClient, roomName)
+      
       let scoringOptions;
+      
+      //check if initial dice roll
       if (!gameState.dice) {
         gameState.dice = initializeDice()
         scoringOptions = displayScoringOptions(gameState.dice)
         console.log(scoringOptions)
         await setGameData(redisClient, roomName, gameState)
       } else {
+        // reroll unheld dice
         gameState.dice = roll(gameState.dice)
         scoringOptions = displayScoringOptions(gameState.dice)
         // console.log(scoringOptions)
@@ -175,16 +179,22 @@ io.on("connection", async (socket) => {
 
       io.to(roomName).emit('ROLLED', gameState.dice, scoringOptions)
 
-      // after ROLL button clicked, button becomes disabled and options appear
-      // after user selects an option()s, ROLL button is enabled but still have ability to select options (at least 1 option must be clicked)
-      // if score is >= 300, BANK button enables
-      // user clicks ROLL to confirm selections or BANK to end turn
-      // if user clicks ROLL or BANK, send back selected options
-      // game round ++
-      // 
-      // if ROLL:
-      // filter dice with dieValue from selected option and change isHeld to true;
-      // roll dice with isHeld false and emit dice and options
+      // after ROLL button clicked, ROLL button becomes disabled and options appear
+      // at least 1 score option must be clicked for ROLL button to be enabled
+          // if score is >= 300, BANK button enables
+      // after user selects options, user clicks: 
+          // ROLL to confirm selections or 
+          // BANK to end turn
+      
+      // if user clicks ROLL, send back selected options
+          // filter dice with dieValue from selected option and change affected die's attribute isHeld to true;
+          // roll dice with isHeld false
+          // emit dice, options, and current score to frontend to display in BANK
+          
+      // if user clicks BANK, send back selected options
+          // game round ++
+          // clear selected options
+          // switch user (already being done)
 
 
     })
@@ -192,6 +202,7 @@ io.on("connection", async (socket) => {
     socket.on('BANK', async () => {
       const currentGameState = await getGameData(redisClient, roomName)
       console.log(currentGameState)
+      // switch current player
       currentGameState[roomName].currentPlayerIndex == 0 ? currentGameState[roomName].currentPlayerIndex = 1 : currentGameState[roomName].currentPlayerIndex = 0
       await setGameData(redisClient, roomName, currentGameState)
       io.to(roomName).emit('BANKED', currentGameState, currentGameState[roomName].currentPlayerIndex, currentGameState[roomName].players)
@@ -200,7 +211,7 @@ io.on("connection", async (socket) => {
     socket.on('disconnect', async () => {
       // remove room from redis
       const roomData = await getGameData(redisClient, currentRoomName)
-      //On disconnect remove player from players array
+      // On disconnect remove player from players array
       const updatedRoomData = roomData?.[currentRoomName].players.filter(playerId => playerId !== currentUserId)
 
       if (updatedRoomData.length == 0) {
