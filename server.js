@@ -94,9 +94,9 @@ io.on("connection", async (socket) => {
       if (matchingRoom[roomName].players.find(player => player === userId)) {
         return
       }
-      //
+      //If a room exists create second user property
       if (matchingRoom[roomName].players.length < 2) {
-        //If a room exists create second user property
+        
         let userIdentifier;
         //If user has left room and come back, assign their user property accordingly
         matchingRoom[roomName].secondUser ? userIdentifier = 'firstUser' : userIdentifier = 'secondUser'
@@ -160,13 +160,17 @@ io.on("connection", async (socket) => {
     socket.on('ROLL', async () => {
       //initialize die array that will be passed around per turn
       const gameState = await getGameData(redisClient, roomName)
+      
       let scoringOptions;
+      
+      //check if initial dice roll
       if (!gameState.dice) {
         gameState.dice = initializeDice()
         scoringOptions = displayScoringOptions(gameState.dice)
         console.log(scoringOptions)
         await setGameData(redisClient, roomName, gameState)
       } else {
+        // reroll unheld dice
         gameState.dice = roll(gameState.dice)
         scoringOptions = displayScoringOptions(gameState.dice)
         // console.log(scoringOptions)
@@ -179,6 +183,7 @@ io.on("connection", async (socket) => {
     socket.on('BANK', async () => {
       const currentGameState = await getGameData(redisClient, roomName)
       console.log(currentGameState)
+      // switch current player
       currentGameState[roomName].currentPlayerIndex == 0 ? currentGameState[roomName].currentPlayerIndex = 1 : currentGameState[roomName].currentPlayerIndex = 0
       await setGameData(redisClient, roomName, currentGameState)
       io.to(roomName).emit('BANKED', currentGameState, currentGameState[roomName].currentPlayerIndex, currentGameState[roomName].players)
@@ -187,7 +192,7 @@ io.on("connection", async (socket) => {
     socket.on('disconnect', async () => {
       // remove room from redis
       const roomData = await getGameData(redisClient, currentRoomName)
-      //On disconnect remove player from players array
+      // On disconnect remove player from players array
       const updatedRoomData = roomData?.[currentRoomName].players.filter(playerId => playerId !== currentUserId)
 
       if (updatedRoomData.length == 0) {
