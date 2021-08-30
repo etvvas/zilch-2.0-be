@@ -22,7 +22,6 @@ const {
   filterSelected,
   updateDice,
 } = require("./lib/utils/gameLogic.js");
-const { Log } = require("@tensorflow/tfjs");
 
 const updateLobby = async (redisClient) => {
   const allGames = await getAllRoomData(
@@ -248,7 +247,6 @@ io.on("connection", async (socket) => {
 
       // without toggle
       await setGameData(redisClient, roomName, roomData)
-
       // with toggle, wait to setGameData on Roll or Bank
       io.to(roomName).emit('UPDATE_SCORING_OPTIONS', updatedDice, scoringOptions, roomData[currentRoomName])
     });
