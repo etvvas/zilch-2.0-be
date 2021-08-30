@@ -218,7 +218,6 @@ io.on("connection", async (socket) => {
         currentGameState[roomName][matchingUser].numberOfRounds++
         currentGameState[roomName].rounds = Math.max(currentGameState[roomName].firstUser.numberOfRounds, currentGameState[roomName].secondUser.numberOfRounds)
 
-        console.log(currentGameState[roomName]);
       // switch current player
       currentGameState[roomName].currentPlayerIndex == 0
         ? (currentGameState[roomName].currentPlayerIndex = 1)
@@ -251,7 +250,7 @@ io.on("connection", async (socket) => {
       await setGameData(redisClient, roomName, roomData)
 
       // with toggle, wait to setGameData on Roll or Bank
-      io.to(roomName).emit('UPDATE_SCORING_OPTIONS', updatedDice, scoringOptions)
+      io.to(roomName).emit('UPDATE_SCORING_OPTIONS', updatedDice, scoringOptions, roomData[currentRoomName])
     });
 
     socket.on("disconnect", async () => {
