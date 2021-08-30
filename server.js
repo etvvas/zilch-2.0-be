@@ -174,6 +174,19 @@ io.on("connection", async (socket) => {
       }
 
       io.to(roomName).emit('ROLLED', gameState.dice, scoringOptions)
+
+      // after ROLL button clicked, button becomes disabled and options appear
+      // after user selects an option()s, ROLL button is enabled but still have ability to select options (at least 1 option must be clicked)
+      // if score is >= 300, BANK button enables
+      // user clicks ROLL to confirm selections or BANK to end turn
+      // if user clicks ROLL or BANK, send back selected options
+      // game round ++
+      // 
+      // if ROLL:
+      // filter dice with dieValue from selected option and change isHeld to true;
+      // roll dice with isHeld false and emit dice and options
+
+
     })
 
     socket.on('BANK', async () => {
