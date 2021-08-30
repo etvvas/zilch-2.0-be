@@ -9,7 +9,7 @@ const io = require("socket.io")(httpServer, {
 const { setGameData, getGameData, getAllRoomData, getAllRooms, deleteRoom } = require('./lib/utils/redis.js');
 const moment = require('moment');
 
-const { roll, initializeDice } = require('./lib/utils/gameLogic.js')
+const { roll, initializeDice, displayScoringOptions } = require('./lib/utils/gameLogic.js')
 
 
 const updateLobby = async (redisClient) => {
@@ -123,14 +123,14 @@ io.on("connection", async (socket) => {
     }
 
     socket.on('PLAYER_READY',
-    //roomName and userId already accessible should probably be removed
+      //roomName and userId already accessible should probably be removed
       async (roomName, userId) => {
         const matchingRoom = await getGameData(redisClient, roomName)
         matchingRoom[roomName].ready.push(userId)
         await setGameData(redisClient, roomName, matchingRoom)
 
         io.to(roomName).emit('READY', matchingRoom)
-      
+
 
         if (matchingRoom[roomName].ready.length > 1) {
           //Posting new game to SQL db
@@ -153,14 +153,27 @@ io.on("connection", async (socket) => {
 
           await setGameData(redisClient, roomName, matchingRoom)
 
-          io.to(roomName).emit('START_GAME', matchingRoom, matchingRoom[roomName].currentPlayerIndex,  matchingRoom[roomName].players)
+          io.to(roomName).emit('START_GAME', matchingRoom, matchingRoom[roomName].currentPlayerIndex, matchingRoom[roomName].players)
         }
       })
 
-    socket.on('ROLL', () => {
+    socket.on('ROLL', async () => {
       //initialize die array that will be passed around per turn
-      const dice = initializeDice()
-      socket.emit('ROLLED', dice)
+      const gameState = await getGameData(redisClient, roomName)
+      let scoringOptions;
+      if (!gameState.dice) {
+        gameState.dice = initializeDice()
+        scoringOptions = displayScoringOptions(gameState.dice)
+        console.log(scoringOptions)
+        await setGameData(redisClient, roomName, gameState)
+      } else {
+        gameState.dice = roll(gameState.dice)
+        scoringOptions = displayScoringOptions(gameState.dice)
+        // console.log(scoringOptions)
+        await setGameData(redisClient, roomName, gameState)
+      }
+
+      socket.emit('ROLLED', gameState.dice, scoringOptions)
     })
 
     socket.on('BANK', async () => {
@@ -168,7 +181,7 @@ io.on("connection", async (socket) => {
       console.log(currentGameState)
       currentGameState[roomName].currentPlayerIndex == 0 ? currentGameState[roomName].currentPlayerIndex = 1 : currentGameState[roomName].currentPlayerIndex = 0
       await setGameData(redisClient, roomName, currentGameState)
-      io.to(roomName).emit('BANKED', currentGameState, currentGameState[roomName].currentPlayerIndex,  currentGameState[roomName].players)
+      io.to(roomName).emit('BANKED', currentGameState, currentGameState[roomName].currentPlayerIndex, currentGameState[roomName].players)
     })
 
     socket.on('disconnect', async () => {
@@ -176,7 +189,7 @@ io.on("connection", async (socket) => {
       const roomData = await getGameData(redisClient, currentRoomName)
       //On disconnect remove player from players array
       const updatedRoomData = roomData?.[currentRoomName].players.filter(playerId => playerId !== currentUserId)
-      
+
       if (updatedRoomData.length == 0) {
         //If no players in player array remove room
         await deleteRoom(redisClient, currentRoomName)

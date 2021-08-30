@@ -1,4 +1,4 @@
-const { roll, initializeDice, reduceDice, displayScoringOptions } = require('../lib/utils/gameLogic.js')
+const { roll, initializeDice, displayScoringOptions } = require('../lib/utils/gameLogic.js')
 
 describe('tests game logic functions', () => {
   it('initializes dice array', async () => {
@@ -224,23 +224,9 @@ describe('tests game logic functions', () => {
     ])
   })
 
-  test('testing if reduce of unheld dice provides displays number of each die', () => {
-    const output = reduceDice(diceOne);
-    expect(output).toEqual({
-      '1': 1,
-      '5': 3
-    })
-
-    const secondOutput = reduceDice(diceTwo);
-    expect(secondOutput).toEqual({
-      '1': 3,
-      '4': 3
-    })
-
-  })
 
   it('displays the scoring options from a dice roll', () => {
-    console.log('TWO THREE OF A KIND', displayScoringOptions( diceTwo))
+    console.log('TWO THREE OF A KIND', displayScoringOptions(diceTwo))
     console.log('STRAIGHT DICE', displayScoringOptions(straightDice))
     console.log('1 FIVE AND 2 ONES', displayScoringOptions(fiveAndOnesArray));
     console.log('THREE PAIRS', displayScoringOptions(threePairsArray));
