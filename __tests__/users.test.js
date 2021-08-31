@@ -7,6 +7,7 @@ const { UserGame, UserZilch, UserUberZilches } = require('../lib/models/UserStat
 const Zilch = require('../lib/models/Zilch.js');
 const Result = require('../lib/models/Result.js');
 const UberZilch = require('../lib/models/UberZilch.js');
+const User = require('../lib/models/User.js');
 
 describe('users routes', () => {
 
@@ -318,5 +319,20 @@ describe('users routes', () => {
     }])
   })
 
+  test.only('get user info by username', async() => {
+    const user1 = await agent
+      .post('/api/v1/signup')
+      .send(userOne);
 
+      console.log('user1', user1.body)
+      console.log('user1 username', user1.body.username)
+    const res = await agent
+      .get(`/api/v1/users/${user1.body.username}`)
+
+    expect(res.body).toEqual({
+      userId: '1',
+      username: 'username',
+      avatar: 'Avatar.png'
+    })
+  })
 });
