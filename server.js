@@ -190,6 +190,7 @@ io.on("connection", async (socket) => {
 
       if (dice.filter(die => die.held === true).length === 6) {
         gameState.dice = initializeDice()
+        // return io.to(roomName).emit('FREE_ROLL')
       }
 
       gameState[roomName].firstUser.userId === currentUserId
@@ -200,19 +201,26 @@ io.on("connection", async (socket) => {
       if (!gameState.dice) {
         gameState.dice = initializeDice();
         scoringOptions = displayScoringOptions(gameState.dice);
-        await setGameData(redisClient, roomName, gameState);
-        io.to(roomName).emit("ROLLED", gameState.dice, scoringOptions);
+        if (scoringOptions[0].choice === 'ZILCH') {
+          gameState[roomName].isFreeRoll = true
+          io.to(roomName).emit('ROLLED', gameState.dice, [], gameState[roomName].isFreeRoll)
+          delete gameState[roomName].isFreeRoll
+          await setGameData(redisClient, roomName, gameState)
+        } else {
+          await setGameData(redisClient, roomName, gameState);
+          io.to(roomName).emit("ROLLED", gameState.dice, scoringOptions);
+        }
       } else {
         // reroll unheld dice
         gameState.dice = roll(gameState.dice);
         scoringOptions = displayScoringOptions(gameState.dice);
-        // console.log('SCORING OPTION', scoringOptions[0].choice === 'ZILCH')
+
         if (scoringOptions[0].choice === 'ZILCH') {
           gameState[roomName][matchingUser].roundScore = 0
           gameState[roomName][matchingUser].playerZilches++
           if (gameState[roomName][matchingUser].playerZilches % 3 === 0) gameState[roomName][matchingUser].playerUberZilches++
           gameState[roomName].currentPlayerIndex == 1 ? gameState[roomName].currentPlayerIndex = 0 : gameState[roomName].currentPlayerIndex = 1
-          console.log('DICE', gameState.dice);
+
           delete gameState.dice
           io.to(roomName).emit('ZILCH', gameState[roomName].players[gameState[roomName].currentPlayerIndex])
           await setGameData(redisClient, roomName, gameState)
@@ -264,13 +272,19 @@ io.on("connection", async (socket) => {
       roomData[roomName][matchingUser].roundScore += selectedOptions[0].score;
       const updatedDice = updateDice(roomData.dice, selectedOptions)
       roomData.dice = updatedDice
+      if (roomData.dice.filter(die => die.held === true).length === 6) {
+        roomData[currentRoomName].isFreeRoll = true
+      }
 
       const scoringOptions = displayScoringOptions(updatedDice)
 
       // without toggle
-      await setGameData(redisClient, roomName, roomData)
       // with toggle, wait to setGameData on Roll or Bank
       io.to(roomName).emit('UPDATE_SCORING_OPTIONS', updatedDice, scoringOptions, roomData[currentRoomName])
+      if (roomData[currentRoomName].isFreeRoll) {
+        delete roomData[currentRoomName].isFreeRoll
+      }
+      await setGameData(redisClient, roomName, roomData)
     });
 
     socket.on("disconnect", async () => {
