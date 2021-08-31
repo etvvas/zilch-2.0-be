@@ -204,14 +204,13 @@ io.on("connection", async (socket) => {
         scoringOptions = displayScoringOptions(gameState.dice);
         // console.log('SCORING OPTION', scoringOptions[0].choice === 'ZILCH')
         if (scoringOptions[0].choice === 'ZILCH') {
-          console.log("ZILCHED")
           gameState[roomName][matchingUser].roundScore = 0
-          // console.log('CURRENT PLAYER', gameState[roomName].currentPlayerIndex)
           gameState[roomName].currentPlayerIndex == 1 ? gameState[roomName].currentPlayerIndex = 0 : gameState[roomName].currentPlayerIndex = 1
-          // console.log('UPDATED CURRENT PLAYER', gameState[roomName].currentPlayerIndex)
+          console.log('DICE', gameState.dice);
+          delete gameState.dice
           io.to(roomName).emit('ZILCH', gameState[roomName].players[gameState[roomName].currentPlayerIndex])
+          await setGameData(redisClient, roomName, gameState)
         } else {
-          console.log('ROLLED')
           await setGameData(redisClient, roomName, gameState);
           io.to(roomName).emit("ROLLED", gameState.dice, scoringOptions);
         }
