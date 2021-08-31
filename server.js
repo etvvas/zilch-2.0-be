@@ -181,12 +181,16 @@ io.on("connection", async (socket) => {
       }
     );
 
-    socket.on("ROLL", async () => {
+    socket.on("ROLL", async dice => {
       //initialize die array that will be passed around per turn
       const gameState = await getGameData(redisClient, roomName);
       // if(gameState.dice.find(die => die.held == true))
       let matchingUser;
       let scoringOptions;
+
+      if (dice.filter(die => die.held === true).length === 6) {
+        gameState.dice = initializeDice()
+      }
 
       gameState[roomName].firstUser.userId === currentUserId
         ? (matchingUser = "firstUser")
@@ -206,7 +210,7 @@ io.on("connection", async (socket) => {
         if (scoringOptions[0].choice === 'ZILCH') {
           gameState[roomName][matchingUser].roundScore = 0
           gameState[roomName][matchingUser].playerZilches++
-          if(gameState[roomName][matchingUser].playerZilches % 3 === 0) gameState[roomName][matchingUser].playerUberZilches++
+          if (gameState[roomName][matchingUser].playerZilches % 3 === 0) gameState[roomName][matchingUser].playerUberZilches++
           gameState[roomName].currentPlayerIndex == 1 ? gameState[roomName].currentPlayerIndex = 0 : gameState[roomName].currentPlayerIndex = 1
           console.log('DICE', gameState.dice);
           delete gameState.dice
