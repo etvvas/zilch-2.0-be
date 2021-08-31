@@ -14,9 +14,7 @@ describe('users routes', () => {
     return setup(pool);
   });
 
-  const agent = request.agent(app)
-
-  const userOne = {
+    const userOne = {
     username: 'username',
     password: 'password',
     avatar: 'Avatar.png'
@@ -34,10 +32,30 @@ describe('users routes', () => {
     avatar: 'Avatar.png'
   }
 
+  const agent = request.agent(app)
+
+  const user1 = agent
+      .post('/api/v1/signup')
+      .send(userOne);
+
+    const user2 = agent
+      .post('/api/v1/signup')
+      .send(userTwo);
+
+    const user3 = agent
+      .post('/api/v1/signup')
+      .send(userThree);
+
   test('create a userGame via POST', async () => {
     const user1 = await agent
       .post('/api/v1/signup')
       .send(userOne);
+    const user2 = await agent
+      .post('/api/v1/signup')
+      .send(userTwo);
+    const user3 = await agent
+      .post('/api/v1/signup')
+      .send(userThree);
 
     const game = await Game.insert({
       firstUserId: '1',
@@ -180,6 +198,24 @@ describe('users routes', () => {
 
   test('outputs all WINS of a user via GET', async () => {
 
+      const userOne = {
+    username: 'username',
+    password: 'password',
+    avatar: 'Avatar.png'
+  }
+
+  const userTwo = {
+    username: 'somebody',
+    password: 'password',
+    avatar: 'Avatar.png'
+  }
+
+  const userThree = {
+    username: 'no one',
+    password: 'password',
+    avatar: 'Avatar.png'
+  }
+
     const user1 = await agent
       .post('/api/v1/signup')
       .send(userOne);
@@ -233,7 +269,7 @@ describe('users routes', () => {
     })
 
     const res = await agent
-      .get(`/api/v1/users/${user1.body.userId}/wins`)
+      .get(`/api/v1/users/1/wins`)
       console.log('RES BODY',res.body)
     expect(res.body).toEqual([
       { userId: user1.body.userId,
