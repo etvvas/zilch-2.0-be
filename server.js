@@ -64,7 +64,7 @@ io.on("connection", async (socket) => {
   socket.on("DISCONNECT", () => {
     //disconnect socket from server on component unmount
     socket.disconnect(true);
-   
+
   });
 
   //get game room data on initial entry
@@ -185,43 +185,59 @@ io.on("connection", async (socket) => {
       //initialize die array that will be passed around per turn
       const gameState = await getGameData(redisClient, roomName);
       // if(gameState.dice.find(die => die.held == true))
-
+      let matchingUser;
       let scoringOptions;
+
+      gameState[roomName].firstUser.userId === currentUserId
+        ? (matchingUser = "firstUser")
+        : (matchingUser = "secondUser");
 
       //check if initial dice roll
       if (!gameState.dice) {
         gameState.dice = initializeDice();
         scoringOptions = displayScoringOptions(gameState.dice);
         await setGameData(redisClient, roomName, gameState);
+        io.to(roomName).emit("ROLLED", gameState.dice, scoringOptions);
       } else {
         // reroll unheld dice
         gameState.dice = roll(gameState.dice);
         scoringOptions = displayScoringOptions(gameState.dice);
-        await setGameData(redisClient, roomName, gameState);
+        // console.log('SCORING OPTION', scoringOptions[0].choice === 'ZILCH')
+        if (scoringOptions[0].choice === 'ZILCH') {
+          console.log("ZILCHED")
+          gameState[roomName][matchingUser].roundScore = 0
+          // console.log('CURRENT PLAYER', gameState[roomName].currentPlayerIndex)
+          gameState[roomName].currentPlayerIndex == 1 ? gameState[roomName].currentPlayerIndex = 0 : gameState[roomName].currentPlayerIndex = 1
+          // console.log('UPDATED CURRENT PLAYER', gameState[roomName].currentPlayerIndex)
+          io.to(roomName).emit('ZILCH', gameState[roomName].players[gameState[roomName].currentPlayerIndex])
+        } else {
+          console.log('ROLLED')
+          await setGameData(redisClient, roomName, gameState);
+          io.to(roomName).emit("ROLLED", gameState.dice, scoringOptions);
+        }
       }
 
-      io.to(roomName).emit("ROLLED", gameState.dice, scoringOptions);
     });
 
     socket.on("BANK", async () => {
       const currentGameState = await getGameData(redisClient, roomName);
       delete currentGameState.dice;
-      
+
       let matchingUser;
       currentGameState[roomName].firstUser.userId === currentUserId
         ? (matchingUser = "firstUser")
         : (matchingUser = "secondUser");
 
-        currentGameState[roomName][matchingUser].playerScore +=  currentGameState[roomName][matchingUser].roundScore
-        currentGameState[roomName][matchingUser].roundScore = 0;
-        currentGameState[roomName][matchingUser].numberOfRounds++
-        currentGameState[roomName].rounds = Math.max(currentGameState[roomName].firstUser.numberOfRounds, currentGameState[roomName].secondUser.numberOfRounds)
+      currentGameState[roomName][matchingUser].playerScore += currentGameState[roomName][matchingUser].roundScore
+      currentGameState[roomName][matchingUser].roundScore = 0;
+      currentGameState[roomName][matchingUser].numberOfRounds++
+      currentGameState[roomName].rounds = Math.max(currentGameState[roomName].firstUser.numberOfRounds, currentGameState[roomName].secondUser.numberOfRounds)
 
       // switch current player
       currentGameState[roomName].currentPlayerIndex == 0
         ? (currentGameState[roomName].currentPlayerIndex = 1)
         : (currentGameState[roomName].currentPlayerIndex = 0);
- console.log(currentGameState[roomName]);
+
       await setGameData(redisClient, roomName, currentGameState);
 
       io.to(roomName).emit(
@@ -242,7 +258,7 @@ io.on("connection", async (socket) => {
       roomData[roomName][matchingUser].roundScore += selectedOptions[0].score;
       const updatedDice = updateDice(roomData.dice, selectedOptions)
       roomData.dice = updatedDice
-      
+
       const scoringOptions = displayScoringOptions(updatedDice)
 
       // without toggle
