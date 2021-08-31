@@ -4,10 +4,11 @@ const GameService = require("./lib/services/GameService.js");
 const httpServer = require("http").createServer(app);
 const pool = require("./lib/utils/pool.js");
 const io = require("socket.io")(httpServer, {
-  cors: {
-    origin: ['https://zilch-v2-staging.netlify.app'],
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
-  }
+  cors: true
+  // {
+  //   origin: ['https://zilch-v2-staging.netlify.app'],
+  //   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
+  // }
   //Heroku
 });
 const {
@@ -52,8 +53,8 @@ const joinLobby = async (socket, redisClient) => {
 /////
 io.on("connection", async (socket) => {
   console.log(`${socket.id} connected`);
-  let currentUserId;
-  let currentRoomName;
+  let currentUserId = null
+  let currentRoomName = null
 
   //deployed
   const redisClient = redis.createClient(process.env.REDIS_URL)
@@ -66,6 +67,7 @@ io.on("connection", async (socket) => {
   await joinLobby(socket, redisClient);
 
   socket.on("DISCONNECT", () => {
+    console.log('DISCONNECT EVENT');
     //disconnect socket from server on component unmount
     socket.disconnect(true);
 
@@ -307,34 +309,38 @@ io.on("connection", async (socket) => {
       await setGameData(redisClient, roomName, roomData)
     });
 
-    socket.on("disconnect", async () => {
-      // remove room from redis
+  });
+  socket.on("disconnect", async () => {
+   
+    // remove room from redis
+    if(currentRoomName) {
       const roomData = await getGameData(redisClient, currentRoomName);
-      // On disconnect remove player from players array
-      const updatedRoomData = roomData?.[currentRoomName].players.filter(
-        (playerId) => playerId !== currentUserId
-      );
+    // On disconnect remove player from players array
+    const updatedRoomData = roomData?.[currentRoomName].players.filter(
+      (playerId) => playerId !== currentUserId
+    );
 
-      if (updatedRoomData.length == 0) {
-        //If no players in player array remove room
-        await deleteRoom(redisClient, currentRoomName);
-        await updateLobby(redisClient);
-      } else {
-        //If players in player array, update player array, and remove either firstUser or secondUser from game Object
-        roomData[currentRoomName].players = updatedRoomData;
-        let matchingUser;
-        //Check if user is first or second
-        roomData[currentRoomName].firstUser.userId === currentUserId
-          ? (matchingUser = "firstUser")
-          : (matchingUser = "secondUser");
-        //delete first or second from game room Object
-        delete roomData[currentRoomName][matchingUser];
-        await setGameData(redisClient, currentRoomName, roomData);
-        await updateLobby(redisClient);
-      }
-      console.log(socket.id, "disconnected");
-      redisClient.end(true);
-    });
+    if (updatedRoomData.length == 0) {
+      //If no players in player array remove room
+      await deleteRoom(redisClient, currentRoomName);
+      await updateLobby(redisClient);
+    } else {
+      //If players in player array, update player array, and remove either firstUser or secondUser from game Object
+      roomData[currentRoomName].players = updatedRoomData;
+      let matchingUser;
+      //Check if user is first or second
+      roomData[currentRoomName].firstUser.userId === currentUserId
+        ? (matchingUser = "firstUser")
+        : (matchingUser = "secondUser");
+      //delete first or second from game room Object
+      delete roomData[currentRoomName][matchingUser];
+      await setGameData(redisClient, currentRoomName, roomData);
+      await updateLobby(redisClient);
+    }
+    }
+    
+    console.log(socket.id, "disconnected");
+    redisClient.end(true);
   });
 });
 
