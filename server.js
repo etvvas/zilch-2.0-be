@@ -4,11 +4,11 @@ const GameService = require("./lib/services/GameService.js");
 const httpServer = require("http").createServer(app);
 const pool = require("./lib/utils/pool.js");
 const io = require("socket.io")(httpServer, {
-  cors: true
-  // cors: {
-  //   origin: ['https://zilch-v2-staging.netlify.app'],
-  //   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
-  // }
+  // cors: true
+  cors: {
+    origin: ['https://zilch-v2-staging.netlify.app'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
+  }
   //Heroku
 });
 const {
@@ -53,20 +53,21 @@ const joinLobby = async (socket, redisClient) => {
 /////
 io.on("connection", async (socket) => {
   console.log(`${socket.id} connected`);
-  let currentUserId;
-  let currentRoomName;
+  let currentUserId = null
+  let currentRoomName = null
 
   //deployed
-  // const redisClient = redis.createClient(process.env.REDIS_URL)
+  const redisClient = redis.createClient(process.env.REDIS_URL)
 
   // local
-  const redisClient = redis.createClient();
-
+  // const redisClient = redis.createClient();
+  //
   // get all rooms data;
   //on User entering lobby get all games from redis and send to user
   await joinLobby(socket, redisClient);
 
   socket.on("DISCONNECT", () => {
+    console.log('DISCONNECT EVENT');
     //disconnect socket from server on component unmount
     socket.disconnect(true);
 
@@ -308,15 +309,18 @@ io.on("connection", async (socket) => {
       await setGameData(redisClient, roomName, roomData)
     });
 
-    socket.on("disconnect", async () => {
-      // remove room from redis
+  });
+  socket.on("disconnect", async () => {
+
+    // remove room from redis
+    if (currentRoomName) {
       const roomData = await getGameData(redisClient, currentRoomName);
       // On disconnect remove player from players array
       const updatedRoomData = roomData?.[currentRoomName].players.filter(
         (playerId) => playerId !== currentUserId
       );
 
-      if (!updatedRoomData || updatedRoomData.length == 0) {
+      if (!updateRoomData || updatedRoomData.length == 0) {
         //If no players in player array remove room
         await deleteRoom(redisClient, currentRoomName);
         await updateLobby(redisClient);
@@ -333,9 +337,15 @@ io.on("connection", async (socket) => {
         await setGameData(redisClient, currentRoomName, roomData);
         await updateLobby(redisClient);
       }
-      console.log(socket.id, "disconnected");
-      redisClient.end(true);
-    });
+    }
+    const allGames = await getAllRoomData(
+      redisClient,
+      await getAllRooms(redisClient))
+
+
+    console.log(socket.id, "disconnected");
+    redisClient.end(true);
+    console.log('after CLIENT END GAME DATA', allGames)
   });
 });
 
