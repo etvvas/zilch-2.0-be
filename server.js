@@ -205,6 +205,8 @@ io.on("connection", async (socket) => {
         // console.log('SCORING OPTION', scoringOptions[0].choice === 'ZILCH')
         if (scoringOptions[0].choice === 'ZILCH') {
           gameState[roomName][matchingUser].roundScore = 0
+          gameState[roomName][matchingUser].playerZilches++
+          if(gameState[roomName][matchingUser].playerZilches % 3 === 0) gameState[roomName][matchingUser].playerUberZilches++
           gameState[roomName].currentPlayerIndex == 1 ? gameState[roomName].currentPlayerIndex = 0 : gameState[roomName].currentPlayerIndex = 1
           console.log('DICE', gameState.dice);
           delete gameState.dice
@@ -215,6 +217,7 @@ io.on("connection", async (socket) => {
           io.to(roomName).emit("ROLLED", gameState.dice, scoringOptions);
         }
       }
+      //IF all dice held then reset dice, send dice on roll
 
     });
 
