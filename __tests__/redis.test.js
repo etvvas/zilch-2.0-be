@@ -6,8 +6,6 @@ const {
   getAllRooms,
   getAllRoomData,
   deleteRoom } = require('../lib/utils/redis.js')
-const app = require('../lib/app.js')
-const request = require('supertest')
 
 let redisClient;
 let get;
@@ -43,42 +41,6 @@ describe('tests redis functions', () => {
     const retrievedData = await getGameData(redisClient, 'chase')
 
     expect(retrievedData).toEqual({ chase: 'abbott' })
-  })
-
-  it('makes a request to the api to post data to the redis db', async () => {
-    const data = {
-      game1: {
-        gameId: '1',
-        firstUserId: '1',
-        secondUserId: '2',
-        winner: 'chase',
-        timestampStart: '1:50',
-        timestampEnd: '2:00',
-        targetScore: 5000,
-        firstUser: {
-          userId: '1',
-          gameId: '1',
-          numberOfRounds: 10,
-          playerScore: 3000,
-          playerZilches: 3,
-          playerUberZilches: 1
-        },
-        secondUser: {
-          userId: '2',
-          gameId: '1',
-          numberOfRounds: 10,
-          playerScore: 5000,
-          playerZilches: 4,
-          playerUberZilches: 1
-        }
-      }
-    }
-
-    const { body } = await request(app)
-      .post('/api/v1/games/redis')
-      .send(data)
-
-    expect(body).toEqual(data.game1)
   })
 
   it('gets all of the \'Room\' keys', async () => {
