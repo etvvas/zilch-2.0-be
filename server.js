@@ -338,9 +338,14 @@ io.on("connection", async (socket) => {
       await updateLobby(redisClient);
     }
     }
+    const allGames = await getAllRoomData(
+      redisClient,
+      await getAllRooms(redisClient))
+     
     
     console.log(socket.id, "disconnected");
     redisClient.end(true);
+    console.log('after CLIENT END GAME DATA', allGames)
   });
 });
 
