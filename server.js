@@ -6,7 +6,6 @@ const pool = require("./lib/utils/pool.js");
 const io = require("socket.io")(httpServer, {
   cors: true,
 });
-<<<<<<< HEAD
 const {
   setGameData,
   getGameData,
@@ -49,20 +48,12 @@ const joinLobby = async (socket, redisClient) => {
 //Send only nec pieces of state change or entire game object?
 /////
 io.on("connection", async (socket) => {
-=======
-const { setGameData, getGameData } = require('./lib/utils/redis.js');
-const moment = require('moment');
-
-
-io.on("connection", (socket) => {
->>>>>>> 45911c81bb275acc3e83deb2ec7f40930ee711fe
   console.log(`${socket.id} connected`);
 
   //deployed
   const redisClient = redis.createClient(process.env.REDIS_URL)
 
   // local
-<<<<<<< HEAD
   const redisClient = redis.createClient();
 
   // get all rooms data;
@@ -74,24 +65,13 @@ io.on("connection", (socket) => {
     socket.disconnect(true);
 
   });
-=======
-  // const redisClient = redis.createClient()
-
-  // get all rooms data;
-
-  socket.on('DISCONNECT', () => socket.disconnect(true))
->>>>>>> 45911c81bb275acc3e83deb2ec7f40930ee711fe
 
   // socket.emit('ENTER_LOBBY', gameRooms)
   //get game room data on initial entry
   //AND any time there is an update
   socket.on("JOIN_ROOM", async ({ userId, username, avatar }, roomName) => {
-<<<<<<< HEAD
     //Check for matching in redis db
     let matchingRoom = await getGameData(redisClient, roomName);
-=======
-    let matchingRoom = await getGameData(redisClient, roomName)
->>>>>>> 45911c81bb275acc3e83deb2ec7f40930ee711fe
 
     if (!matchingRoom) {
       matchingRoom = {
@@ -117,7 +97,6 @@ io.on("connection", (socket) => {
         },
       };
 
-<<<<<<< HEAD
       await setGameData(redisClient, roomName, matchingRoom);
       socket.emit("ROOM_JOINED", matchingRoom);
       socket.join(roomName);
@@ -136,18 +115,6 @@ io.on("connection", (socket) => {
           : (userIdentifier = "secondUser");
         matchingRoom[roomName].players.push(userId);
         matchingRoom[roomName][userIdentifier] = {
-=======
-      await setGameData(redisClient, roomName, matchingRoom)
-      // io.emit('ENTER_LOBBY', gameRooms)
-      socket.emit('ROOM_JOINED', matchingRoom)
-      socket.join(matchingRoom[roomName].roomName);
-
-    } else {
-
-      if (matchingRoom[roomName].players.length < 2) {
-        matchingRoom[roomName].players.push(userId)
-        matchingRoom[roomName].secondUser = {
->>>>>>> 45911c81bb275acc3e83deb2ec7f40930ee711fe
           userName: username,
           userId: userId,
           avatar: avatar,
@@ -157,28 +124,17 @@ io.on("connection", (socket) => {
           roundScore: 0,
           playerZilches: 0,
           playerUberZilches: 0,
-<<<<<<< HEAD
         };
 
         await setGameData(redisClient, roomName, matchingRoom);
         socket.join(roomName);
         io.to(roomName).emit("ROOM_JOINED", matchingRoom);
         await updateLobby(redisClient);
-=======
-        }
-        //
-        await setGameData(redisClient, roomName, matchingRoom)
-        socket.join(matchingRoom[roomName].roomName);
-        io.to(matchingRoom[roomName].roomName).emit('ROOM_JOINED', matchingRoom)
-        // io.emit('ENTER_LOBBY', gameRooms)
-
->>>>>>> 45911c81bb275acc3e83deb2ec7f40930ee711fe
       } else {
         socket.emit("FULL_ROOM");
       }
     }
 
-<<<<<<< HEAD
     socket.on(
       "PLAYER_READY",
       //roomName and userId already accessible should probably be removed
@@ -336,43 +292,6 @@ io.on("connection", (socket) => {
       console.log(socket.id, "disconnected");
       redisClient.end(true);
     });
-=======
-    socket.on('PLAYER_READY',
-      // Ready buttons
-      // ready: [] -> if length === 2 , start game
-      async (room) => {
-        const matchingRoom = await getGameData(redisClient, room)
-
-        //post game to db
-        const postGame = await GameService.initializeGame({
-          firstUserId: matchingRoom[roomName].firstUser.userId,
-          secondUserId: matchingRoom[roomName].secondUser.userId,
-          timestampStart: moment().format(),
-          targetScore: matchingRoom[roomName].targetScore
-        })
-
-        //set user index
-        if (Math.random() < 0.5) {
-          matchingRoom[roomName].currentPlayerIndex = 0
-        } matchingRoom[roomName].currentPlayerIndex = 1
-
-        console.log(matchingRoom[roomName])
-      })
-
-    // initialize game (/api/v1/startgame)
-    // randomize first player
-    // currentPlayer = room.players[userIndex]
-    // userIndex is random number initially
-    // userIndex = ++userIndex % 2;
-    // )
-
-    socket.on('disconnect', () => {
-      // remove room from redis
-
-      console.log(socket.id, 'disconnected');
-      redisClient.end(true)
-    })
->>>>>>> 45911c81bb275acc3e83deb2ec7f40930ee711fe
   });
 });
 
