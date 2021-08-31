@@ -113,9 +113,9 @@ io.on("connection", async (socket) => {
       await updateLobby(redisClient);
     } else {
       //Does this do anything anymore???
-      if (matchingRoom[roomName].players.find((player) => player === userId)) {
-        return;
-      }
+      // if (matchingRoom[roomName].players.find((player) => player === userId)) {
+      //   return;
+      // }
       //If a room exists create second user property
       if (matchingRoom[roomName].players.length < 2) {
         let userIdentifier;
