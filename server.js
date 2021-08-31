@@ -86,7 +86,7 @@ io.on("connection", async (socket) => {
           players: [userId],
           roomName: roomName,
           rounds: 1,
-          targetScore: 5000,
+          targetScore: 1000,
           firstUser: {
             userName: username,
             userId: userId,
@@ -168,7 +168,7 @@ io.on("connection", async (socket) => {
           matchingRoom[roomName].firstUser.gameId = newGame.gameId;
           matchingRoom[roomName].secondUser.gameId = newGame.gameId;
           matchingRoom[roomName].gameId = newGame.gameId;
-
+          matchingRoom[roomName].timestampStart = newGame.timestampStart
           await setGameData(redisClient, roomName, matchingRoom);
 
           io.to(roomName).emit(
@@ -218,7 +218,10 @@ io.on("connection", async (socket) => {
         if (scoringOptions[0].choice === 'ZILCH') {
           gameState[roomName][matchingUser].roundScore = 0
           gameState[roomName][matchingUser].playerZilches++
-          if (gameState[roomName][matchingUser].playerZilches % 3 === 0) gameState[roomName][matchingUser].playerUberZilches++
+          if (gameState[roomName][matchingUser].playerZilches % 3 === 0) {
+            gameState[roomName][matchingUser].playerUberZilches++
+            gameState[roomName][matchingUser].score -= 500
+          }
           gameState[roomName].currentPlayerIndex == 1 ? gameState[roomName].currentPlayerIndex = 0 : gameState[roomName].currentPlayerIndex = 1
 
           delete gameState.dice
@@ -237,16 +240,29 @@ io.on("connection", async (socket) => {
       const currentGameState = await getGameData(redisClient, roomName);
       delete currentGameState.dice;
 
+
       let matchingUser;
       currentGameState[roomName].firstUser.userId === currentUserId
         ? (matchingUser = "firstUser")
         : (matchingUser = "secondUser");
+
+
 
       currentGameState[roomName][matchingUser].playerScore += currentGameState[roomName][matchingUser].roundScore
       currentGameState[roomName][matchingUser].roundScore = 0;
       currentGameState[roomName][matchingUser].numberOfRounds++
       currentGameState[roomName].rounds = Math.max(currentGameState[roomName].firstUser.numberOfRounds, currentGameState[roomName].secondUser.numberOfRounds)
 
+      if (currentGameState[roomName][matchingUser].playerScore >= currentGameState[roomName].targetScore) {
+        currentGameState[roomName].firstUserId = currentGameState[roomName].firstUser.userId
+        currentGameState[roomName].secondUserId = currentGameState[roomName].secondUser.userId
+        currentGameState[roomName].winner = currentGameState[roomName][matchingUser].userName
+        currentGameState[roomName].timestampEnd = moment().format()
+
+        await GameService.endGame(currentGameState[roomName])
+        await deleteRoom(redisClient, roomName)
+        return io.to(roomName).emit('GAME_OVER', currentGameState[roomName])
+      }
       // switch current player
       currentGameState[roomName].currentPlayerIndex == 0
         ? (currentGameState[roomName].currentPlayerIndex = 1)
