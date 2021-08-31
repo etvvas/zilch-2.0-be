@@ -4,12 +4,14 @@ const GameService = require("./lib/services/GameService.js");
 const httpServer = require("http").createServer(app);
 const pool = require("./lib/utils/pool.js");
 const io = require("socket.io")(httpServer, {
-  cors: {
-    origin: ['https://zilch-v2-staging.netlify.app'],
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
+  //local
+  cors: true,
+  //deploy
+  // cors: {
+  //   origin: ['https://zilch-v2-staging.netlify.app'],
+  //   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
   }
-  //Heroku
-});
+);
 const {
   setGameData,
   getGameData,
