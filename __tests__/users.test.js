@@ -442,7 +442,7 @@ describe('users routes', () => {
     }])
   })
 
-  test.only('get user info by username', async() => {
+  test('get user info by username', async() => {
     const user1 = await agent
       .post('/api/v1/signup')
       .send(userOne);
