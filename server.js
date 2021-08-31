@@ -52,10 +52,10 @@ io.on("connection", async (socket) => {
   let currentRoomName;
 
   //deployed
-  // const redisClient = redis.createClient(process.env.REDIS_URL)
+  const redisClient = redis.createClient(process.env.REDIS_URL)
 
   // local
-  const redisClient = redis.createClient();
+  // const redisClient = redis.createClient();
 
   // get all rooms data;
   //on User entering lobby get all games from redis and send to user
