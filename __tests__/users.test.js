@@ -15,7 +15,7 @@ describe('users routes', () => {
     return setup(pool);
   });
 
-    const userOne = {
+  const userOne = {
     username: 'username',
     password: 'password',
     avatar: 'Avatar.png'
@@ -187,23 +187,23 @@ describe('users routes', () => {
 
   test('outputs all WINS of a user via GET', async () => {
 
-      const userOne = {
-    username: 'username',
-    password: 'password',
-    avatar: 'Avatar.png'
-  }
+    const userOne = {
+      username: 'username',
+      password: 'password',
+      avatar: 'Avatar.png'
+    }
 
-  const userTwo = {
-    username: 'somebody',
-    password: 'password',
-    avatar: 'Avatar.png'
-  }
+    const userTwo = {
+      username: 'somebody',
+      password: 'password',
+      avatar: 'Avatar.png'
+    }
 
-  const userThree = {
-    username: 'no one',
-    password: 'password',
-    avatar: 'Avatar.png'
-  }
+    const userThree = {
+      username: 'no one',
+      password: 'password',
+      avatar: 'Avatar.png'
+    }
 
     const user1 = await agent
       .post('/api/v1/signup')
@@ -285,19 +285,22 @@ describe('users routes', () => {
 
     const res = await agent
       .get(`/api/v1/users/1/wins`)
-      console.log('RES BODY',res.body)
+    console.log('RES BODY', res.body)
     expect(res.body).toEqual([
-      { userId: user1.body.userId,
+      {
+        userId: user1.body.userId,
         username: 'username',
         avatar: 'Avatar.png',
         winner: 'username',
         gameId: '1'
       },
-      { userId: user1.body.userId,
+      {
+        userId: user1.body.userId,
         username: 'username',
         avatar: 'Avatar.png',
         winner: 'username',
-        gameId: '2' }
+        gameId: '2'
+      }
 
     ]);
   });
@@ -311,9 +314,9 @@ describe('users routes', () => {
       .post('/api/v1/signup')
       .send(userTwo);
 
-      const res = await agent.get('/api/v1/users')
-      console.log('USERS USERS', res.body)
-      expect(res.body).toEqual([user1.body, user2.body])
+    const res = await agent.get('/api/v1/users')
+    console.log('USERS USERS', res.body)
+    expect(res.body).toEqual([user1.body, user2.body])
   })
 
   test('GETs all of a users uberZilches', async () => {
