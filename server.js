@@ -92,7 +92,7 @@ io.on("connection", async (socket) => {
           players: [userId],
           roomName: roomName,
           rounds: 1,
-          targetScore: 1000,
+          targetScore: 6000,
           firstUser: {
             userName: username,
             userId: userId,
