@@ -78,7 +78,8 @@ io.on("connection", async (socket) => {
   socket.on("JOIN_ROOM", async ({ userId, username, avatar }, roomName) => {
     //Check for matching in redis db
     let matchingRoom = await getGameData(redisClient, roomName);
-
+    currentUserId = userId;
+    currentRoomName = roomName;
     if (!matchingRoom) {
       matchingRoom = {
         [roomName]: {
