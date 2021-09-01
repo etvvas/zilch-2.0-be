@@ -61,11 +61,7 @@ io.on("connection", async (socket) => {
 
   // local
   // const redisClient = redis.createClient();
-<<<<<<< HEAD
-
-=======
   //
->>>>>>> 06228f9d4315c35027a5d8fb7fd12160387a46dc
   // get all rooms data;
   //on User entering lobby get all games from redis and send to user
   await joinLobby(socket, redisClient);
@@ -338,11 +334,6 @@ io.on("connection", async (socket) => {
         await setGameData(redisClient, currentRoomName, roomData);
         await updateLobby(redisClient);
       }
-<<<<<<< HEAD
-      console.log(socket.id, "disconnected");
-      redisClient.end(true);
-    });
-=======
     }
     const allGames = await getAllRoomData(
       redisClient,
@@ -352,7 +343,6 @@ io.on("connection", async (socket) => {
     console.log(socket.id, "disconnected");
     redisClient.end(true);
     console.log('after CLIENT END GAME DATA', allGames)
->>>>>>> 06228f9d4315c35027a5d8fb7fd12160387a46dc
   });
 });
 
@@ -370,7 +360,3 @@ process.on("exit", () => {
 
 module.exports = io;
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 06228f9d4315c35027a5d8fb7fd12160387a46dc
