@@ -27,6 +27,7 @@ const {
   filterSelected,
   updateDice,
 } = require("./lib/utils/gameLogic.js");
+const { match } = require("assert");
 
 const updateLobby = async (redisClient) => {
   const allGames = await getAllRoomData(
@@ -79,7 +80,8 @@ io.on("connection", async (socket) => {
   socket.on("JOIN_ROOM", async ({ userId, username, avatar }, roomName) => {
     //Check for matching in redis db
     let matchingRoom = await getGameData(redisClient, roomName);
-
+    currentUserId = userId;
+    currentRoomName = roomName;
     if (!matchingRoom) {
       matchingRoom = {
         [roomName]: {
@@ -100,6 +102,7 @@ io.on("connection", async (socket) => {
             roundScore: 0,
             playerZilches: 0,
             playerUberZilches: 0,
+            zilchRun: 0
           },
         },
       };
@@ -110,9 +113,9 @@ io.on("connection", async (socket) => {
       await updateLobby(redisClient);
     } else {
       //Does this do anything anymore???
-      if (matchingRoom[roomName].players.find((player) => player === userId)) {
-        return;
-      }
+      // if (matchingRoom[roomName].players.find((player) => player === userId)) {
+      //   return;
+      // }
       //If a room exists create second user property
       if (matchingRoom[roomName].players.length < 2) {
         let userIdentifier;
@@ -131,6 +134,7 @@ io.on("connection", async (socket) => {
           roundScore: 0,
           playerZilches: 0,
           playerUberZilches: 0,
+          zilchRun: 0
         };
 
         await setGameData(redisClient, roomName, matchingRoom);
@@ -138,6 +142,8 @@ io.on("connection", async (socket) => {
         io.to(roomName).emit("ROOM_JOINED", matchingRoom);
         await updateLobby(redisClient);
       } else {
+        currentUserId = null
+        currentRoomName = null
         socket.emit("FULL_ROOM");
       }
     }
@@ -221,7 +227,8 @@ io.on("connection", async (socket) => {
         if (scoringOptions[0].choice === 'ZILCH') {
           gameState[roomName][matchingUser].roundScore = 0
           gameState[roomName][matchingUser].playerZilches++
-          if (gameState[roomName][matchingUser].playerZilches % 3 === 0) {
+          gameState[roomName][matchUser].zilchRun++
+          if (gameState[roomName][matchingUser].zilchRun % 3 === 0) {
             gameState[roomName][matchingUser].playerUberZilches++
             gameState[roomName][matchingUser].score -= 500
           }
@@ -231,6 +238,7 @@ io.on("connection", async (socket) => {
           io.to(roomName).emit('ZILCH', gameState[roomName].players[gameState[roomName].currentPlayerIndex])
           await setGameData(redisClient, roomName, gameState)
         } else {
+          gameState[roomName][matchingUser].zilchRun = 0
           await setGameData(redisClient, roomName, gameState);
           io.to(roomName).emit("ROLLED", gameState.dice, scoringOptions);
         }
@@ -313,17 +321,16 @@ io.on("connection", async (socket) => {
     if (currentRoomName) {
       const roomData = await getGameData(redisClient, currentRoomName);
       // On disconnect remove player from players array
-      const updatedRoomData = roomData?.[currentRoomName].players.filter(
+      const UpdatedRoomPlayers = roomData?.[currentRoomName].players.filter(
         (playerId) => playerId !== currentUserId
       );
-
-      if (!updatedRoomData || updatedRoomData.length == 0) {
+      if (!UpdatedRoomPlayers || UpdatedRoomPlayers.length == 0) {
         //If no players in player array remove room
         await deleteRoom(redisClient, currentRoomName);
         await updateLobby(redisClient);
       } else {
         //If players in player array, update player array, and remove either firstUser or secondUser from game Object
-        roomData[currentRoomName].players = updatedRoomData;
+        roomData[currentRoomName].players = UpdatedRoomPlayers;
         let matchingUser;
         //Check if user is first or second
         roomData[currentRoomName].firstUser.userId === currentUserId
@@ -335,14 +342,11 @@ io.on("connection", async (socket) => {
         await updateLobby(redisClient);
       }
     }
-    const allGames = await getAllRoomData(
-      redisClient,
-      await getAllRooms(redisClient))
+
 
 
     console.log(socket.id, "disconnected");
     redisClient.end(true);
-    console.log('after CLIENT END GAME DATA', allGames)
   });
 });
 
