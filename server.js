@@ -4,7 +4,12 @@ const GameService = require("./lib/services/GameService.js");
 const httpServer = require("http").createServer(app);
 const pool = require("./lib/utils/pool.js");
 const io = require("socket.io")(httpServer, {
-  cors: true,
+  // cors: true
+  cors: {
+    origin: ['https://zilch-v2-staging.netlify.app'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
+  }
+  //Heroku
 });
 const {
   setGameData,
@@ -22,7 +27,6 @@ const {
   filterSelected,
   updateDice,
 } = require("./lib/utils/gameLogic.js");
-
 
 const updateLobby = async (redisClient) => {
   const allGames = await getAllRoomData(
@@ -49,18 +53,25 @@ const joinLobby = async (socket, redisClient) => {
 /////
 io.on("connection", async (socket) => {
   console.log(`${socket.id} connected`);
+  let currentUserId = null
+  let currentRoomName = null
 
   //deployed
   const redisClient = redis.createClient(process.env.REDIS_URL)
 
   // local
   // const redisClient = redis.createClient();
+<<<<<<< HEAD
 
+=======
+  //
+>>>>>>> 06228f9d4315c35027a5d8fb7fd12160387a46dc
   // get all rooms data;
   //on User entering lobby get all games from redis and send to user
   await joinLobby(socket, redisClient);
 
   socket.on("DISCONNECT", () => {
+    console.log('DISCONNECT EVENT');
     //disconnect socket from server on component unmount
     socket.disconnect(true);
 
@@ -82,7 +93,7 @@ io.on("connection", async (socket) => {
           players: [userId],
           roomName: roomName,
           rounds: 1,
-          targetScore: 5000,
+          targetScore: 1000,
           firstUser: {
             userName: username,
             userId: userId,
@@ -164,7 +175,7 @@ io.on("connection", async (socket) => {
           matchingRoom[roomName].firstUser.gameId = newGame.gameId;
           matchingRoom[roomName].secondUser.gameId = newGame.gameId;
           matchingRoom[roomName].gameId = newGame.gameId;
-
+          matchingRoom[roomName].timestampStart = newGame.timestampStart
           await setGameData(redisClient, roomName, matchingRoom);
 
           io.to(roomName).emit(
@@ -177,12 +188,17 @@ io.on("connection", async (socket) => {
       }
     );
 
-    socket.on("ROLL", async () => {
+    socket.on("ROLL", async dice => {
       //initialize die array that will be passed around per turn
       const gameState = await getGameData(redisClient, roomName);
       // if(gameState.dice.find(die => die.held == true))
       let matchingUser;
       let scoringOptions;
+
+      if (dice.filter(die => die.held === true).length === 6) {
+        gameState.dice = initializeDice()
+        // return io.to(roomName).emit('FREE_ROLL')
+      }
 
       gameState[roomName].firstUser.userId === currentUserId
         ? (matchingUser = "firstUser")
@@ -192,26 +208,38 @@ io.on("connection", async (socket) => {
       if (!gameState.dice) {
         gameState.dice = initializeDice();
         scoringOptions = displayScoringOptions(gameState.dice);
-        await setGameData(redisClient, roomName, gameState);
-        io.to(roomName).emit("ROLLED", gameState.dice, scoringOptions);
+        if (scoringOptions[0].choice === 'ZILCH') {
+          gameState[roomName].isFreeRoll = true
+          io.to(roomName).emit('ROLLED', gameState.dice, [], gameState[roomName].isFreeRoll)
+          delete gameState[roomName].isFreeRoll
+          await setGameData(redisClient, roomName, gameState)
+        } else {
+          await setGameData(redisClient, roomName, gameState);
+          io.to(roomName).emit("ROLLED", gameState.dice, scoringOptions);
+        }
       } else {
         // reroll unheld dice
         gameState.dice = roll(gameState.dice);
         scoringOptions = displayScoringOptions(gameState.dice);
-        // console.log('SCORING OPTION', scoringOptions[0].choice === 'ZILCH')
+
         if (scoringOptions[0].choice === 'ZILCH') {
-          console.log("ZILCHED")
           gameState[roomName][matchingUser].roundScore = 0
-          // console.log('CURRENT PLAYER', gameState[roomName].currentPlayerIndex)
+          gameState[roomName][matchingUser].playerZilches++
+          if (gameState[roomName][matchingUser].playerZilches % 3 === 0) {
+            gameState[roomName][matchingUser].playerUberZilches++
+            gameState[roomName][matchingUser].score -= 500
+          }
           gameState[roomName].currentPlayerIndex == 1 ? gameState[roomName].currentPlayerIndex = 0 : gameState[roomName].currentPlayerIndex = 1
-          // console.log('UPDATED CURRENT PLAYER', gameState[roomName].currentPlayerIndex)
+
+          delete gameState.dice
           io.to(roomName).emit('ZILCH', gameState[roomName].players[gameState[roomName].currentPlayerIndex])
+          await setGameData(redisClient, roomName, gameState)
         } else {
-          console.log('ROLLED')
           await setGameData(redisClient, roomName, gameState);
           io.to(roomName).emit("ROLLED", gameState.dice, scoringOptions);
         }
       }
+      //IF all dice held then reset dice, send dice on roll
 
     });
 
@@ -219,16 +247,29 @@ io.on("connection", async (socket) => {
       const currentGameState = await getGameData(redisClient, roomName);
       delete currentGameState.dice;
 
+
       let matchingUser;
       currentGameState[roomName].firstUser.userId === currentUserId
         ? (matchingUser = "firstUser")
         : (matchingUser = "secondUser");
+
+
 
       currentGameState[roomName][matchingUser].playerScore += currentGameState[roomName][matchingUser].roundScore
       currentGameState[roomName][matchingUser].roundScore = 0;
       currentGameState[roomName][matchingUser].numberOfRounds++
       currentGameState[roomName].rounds = Math.max(currentGameState[roomName].firstUser.numberOfRounds, currentGameState[roomName].secondUser.numberOfRounds)
 
+      if (currentGameState[roomName][matchingUser].playerScore >= currentGameState[roomName].targetScore) {
+        currentGameState[roomName].firstUserId = currentGameState[roomName].firstUser.userId
+        currentGameState[roomName].secondUserId = currentGameState[roomName].secondUser.userId
+        currentGameState[roomName].winner = currentGameState[roomName][matchingUser].userName
+        currentGameState[roomName].timestampEnd = moment().format()
+
+        await GameService.endGame(currentGameState[roomName])
+        await deleteRoom(redisClient, roomName)
+        return io.to(roomName).emit('GAME_OVER', currentGameState[roomName])
+      }
       // switch current player
       currentGameState[roomName].currentPlayerIndex == 0
         ? (currentGameState[roomName].currentPlayerIndex = 1)
@@ -254,25 +295,33 @@ io.on("connection", async (socket) => {
       roomData[roomName][matchingUser].roundScore += selectedOptions[0].score;
       const updatedDice = updateDice(roomData.dice, selectedOptions)
       roomData.dice = updatedDice
+      if (roomData.dice.filter(die => die.held === true).length === 6) {
+        roomData[currentRoomName].isFreeRoll = true
+      }
 
       const scoringOptions = displayScoringOptions(updatedDice)
 
       // without toggle
-      await setGameData(redisClient, roomName, roomData)
-
       // with toggle, wait to setGameData on Roll or Bank
       io.to(roomName).emit('UPDATE_SCORING_OPTIONS', updatedDice, scoringOptions, roomData[currentRoomName])
+      if (roomData[currentRoomName].isFreeRoll) {
+        delete roomData[currentRoomName].isFreeRoll
+      }
+      await setGameData(redisClient, roomName, roomData)
     });
 
-    socket.on("disconnect", async () => {
-      // remove room from redis
+  });
+  socket.on("disconnect", async () => {
+
+    // remove room from redis
+    if (currentRoomName) {
       const roomData = await getGameData(redisClient, currentRoomName);
       // On disconnect remove player from players array
       const updatedRoomData = roomData?.[currentRoomName].players.filter(
         (playerId) => playerId !== currentUserId
       );
 
-      if (updatedRoomData.length == 0) {
+      if (!updateRoomData || updatedRoomData.length == 0) {
         //If no players in player array remove room
         await deleteRoom(redisClient, currentRoomName);
         await updateLobby(redisClient);
@@ -289,11 +338,24 @@ io.on("connection", async (socket) => {
         await setGameData(redisClient, currentRoomName, roomData);
         await updateLobby(redisClient);
       }
+<<<<<<< HEAD
       console.log(socket.id, "disconnected");
       redisClient.end(true);
     });
+=======
+    }
+    const allGames = await getAllRoomData(
+      redisClient,
+      await getAllRooms(redisClient))
+
+
+    console.log(socket.id, "disconnected");
+    redisClient.end(true);
+    console.log('after CLIENT END GAME DATA', allGames)
+>>>>>>> 06228f9d4315c35027a5d8fb7fd12160387a46dc
   });
 });
+
 
 const PORT = process.env.PORT || 7890;
 
@@ -308,4 +370,7 @@ process.on("exit", () => {
 
 module.exports = io;
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 06228f9d4315c35027a5d8fb7fd12160387a46dc
