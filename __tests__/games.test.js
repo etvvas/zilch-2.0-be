@@ -147,4 +147,55 @@ describe('Games tests', () => {
 
     expect(body).toEqual(gameData)
   })
+
+  test('get results of a game', async() => {
+    const user1Res = await agent
+      .post('/api/v1/signup')
+      .send(user);
+
+    const user2Res = await agent
+      .post('/api/v1/signup')
+      .send(user2);
+
+    const newGame = await agent
+      .post('/api/v1/games/start-game')
+      .send({
+        ...gameOne,
+        firstUserId: user1Res.body.userId,
+        secondUserId: user2Res.body.userId
+      })
+
+      const resultsOne = {
+        gameId: newGame.gameId,
+        userId: user1Res.body.userId,
+        numberOfRounds: 5,
+        playerScore: 300
+      }
+
+      const resultsTwo = {
+        gameId: newGame.gameId,
+        userId: user2Res.body.userId,
+        numberOfRounds: 5,
+        playerScore: 500
+      }
+
+      const results1 = await agent
+      .post('/api/v1/results')
+      .send(resultsOne);
+
+      const results2 = await agent
+      .post('/api/v1/results')
+      .send(resultsTwo);
+
+      console.log("new game", newGame)
+      console.log("results1", results1)
+      console.log("results2", results2)
+
+      const res = await agent
+        .get(`/api/v1/games/${newGame.gameId}/results`)
+
+      expect(res.body).toEqual([
+
+      ])
+  })
 });
