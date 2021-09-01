@@ -35,7 +35,7 @@ describe('users routes', () => {
 
   const agent = request.agent(app)
 
-  test('create a userGame via POST', async () => {
+  test.skip('create a userGame via POST', async () => {
     const user1 = await agent
       .post('/api/v1/signup')
       .send(userOne);
