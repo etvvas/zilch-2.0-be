@@ -227,7 +227,7 @@ io.on("connection", async (socket) => {
         if (scoringOptions[0].choice === 'ZILCH') {
           gameState[roomName][matchingUser].roundScore = 0
           gameState[roomName][matchingUser].playerZilches++
-          gameState[roomName][matchUser].zilchRun++
+          gameState[roomName][matchingUser].zilchRun++
           if (gameState[roomName][matchingUser].zilchRun % 3 === 0) {
             gameState[roomName][matchingUser].playerUberZilches++
             gameState[roomName][matchingUser].score -= 500
