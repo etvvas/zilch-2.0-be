@@ -284,7 +284,7 @@ describe('users routes', () => {
     })
 
     const res = await agent
-      .get(`/api/v1/users/3/wins`)
+      .get(`/api/v1/users/1/wins`)
       console.log('RES BODY',res.body)
     expect(res.body).toEqual([
       { userId: user1.body.userId,
