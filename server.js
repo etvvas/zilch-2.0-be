@@ -8,8 +8,9 @@ const io = require("socket.io")(httpServer, {
   cors: {
     origin: ['https://zilch-v2-staging.netlify.app'],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
-  }  }
-);
+  }  
+});
+
 const {
   setGameData,
   getGameData,
@@ -23,10 +24,10 @@ const {
   roll,
   initializeDice,
   displayScoringOptions,
-  filterSelected,
   updateDice,
 } = require("./lib/utils/gameLogic.js");
 const { match } = require("assert");
+
 
 const updateLobby = async (redisClient) => {
   const allGames = await getAllRoomData(
@@ -186,6 +187,8 @@ io.on("connection", async (socket) => {
             matchingRoom[roomName].currentPlayerIndex,
             matchingRoom[roomName].players
           );
+
+          await updateLobby(redisClient)
         }
       }
     );
@@ -238,10 +241,12 @@ io.on("connection", async (socket) => {
           delete gameState.dice
           io.to(roomName).emit('ZILCH', gameState[roomName].players[gameState[roomName].currentPlayerIndex])
           await setGameData(redisClient, roomName, gameState)
+          await updateLobby(redisClient)
         } else {
           gameState[roomName][matchingUser].zilchRun = 0
           await setGameData(redisClient, roomName, gameState);
           io.to(roomName).emit("ROLLED", gameState.dice, scoringOptions);
+          // await updateLobby(redisClient)
         }
       }
       //IF all dice held then reset dice, send dice on roll
@@ -262,7 +267,6 @@ io.on("connection", async (socket) => {
       currentGameState[roomName][matchingUser].roundScore = 0;
       currentGameState[roomName][matchingUser].numberOfRounds++
       currentGameState[roomName].rounds = Math.max(currentGameState[roomName].firstUser.numberOfRounds, currentGameState[roomName].secondUser.numberOfRounds)
-
       if (currentGameState[roomName][matchingUser].playerScore >= currentGameState[roomName].targetScore) {
         currentGameState[roomName].firstUserId = currentGameState[roomName].firstUser.userId
         currentGameState[roomName].secondUserId = currentGameState[roomName].secondUser.userId
@@ -279,6 +283,7 @@ io.on("connection", async (socket) => {
         : (currentGameState[roomName].currentPlayerIndex = 0);
 
       await setGameData(redisClient, roomName, currentGameState);
+      await updateLobby(redisClient)
 
       io.to(roomName).emit(
         "BANKED",
