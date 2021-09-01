@@ -9,8 +9,8 @@ const io = require("socket.io")(httpServer, {
     origin: ['https://zilch-v2-staging.netlify.app'],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
   }
-}
-);
+  //Heroku
+});
 const {
   setGameData,
   getGameData,
@@ -102,7 +102,7 @@ io.on("connection", async (socket) => {
             roundScore: 0,
             playerZilches: 0,
             playerUberZilches: 0,
-            zilchRun: 0
+            zilchRun: 0,
           },
         },
       };
@@ -134,7 +134,7 @@ io.on("connection", async (socket) => {
           roundScore: 0,
           playerZilches: 0,
           playerUberZilches: 0,
-          zilchRun: 0
+          zilchRun: 0,
         };
 
         await setGameData(redisClient, roomName, matchingRoom);
@@ -229,9 +229,10 @@ io.on("connection", async (socket) => {
           gameState[roomName][matchingUser].roundScore = 0
           gameState[roomName][matchingUser].playerZilches++
           gameState[roomName][matchingUser].zilchRun++
-          if (gameState[roomName][matchingUser].zilchRun % 3 === 0) {
+          if (gameState[roomName][matchingUser].zilchRun === 3) {
             gameState[roomName][matchingUser].playerUberZilches++
             gameState[roomName][matchingUser].score -= 500
+            gameState[roomName][matchingUser].zilchRun = 0
           }
           gameState[roomName].currentPlayerIndex == 1 ? gameState[roomName].currentPlayerIndex = 0 : gameState[roomName].currentPlayerIndex = 1
 
