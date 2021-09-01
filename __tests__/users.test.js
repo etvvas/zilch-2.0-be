@@ -35,7 +35,7 @@ describe('users routes', () => {
 
   const agent = request.agent(app)
 
-  test.skip('create a userGame via POST', async () => {
+  test('create a userGame via POST', async () => {
     const user1 = await agent
       .post('/api/v1/signup')
       .send(userOne);
@@ -242,6 +242,22 @@ describe('users routes', () => {
       winner: user2.body.username
     })
 
+    const game4 = await Game.insert({
+      firstUserId: user2.body.userId.toString(),
+      secondUserId: user3.body.userId.toString(),
+      timestampStart: '5:00',
+      targetScore: 10000,
+      winner: user2.body.username
+    })
+
+    const game5 = await Game.insert({
+      firstUserId: user1.body.userId.toString(),
+      secondUserId: user3.body.userId.toString(),
+      timestampStart: '5:00',
+      targetScore: 10000,
+      winner: user3.body.username
+    })
+
     const userGame1 = await UserGame.insert({
       userId: user1.body.userId,
       gameId: game1.gameId
@@ -257,8 +273,18 @@ describe('users routes', () => {
       gameId: game3.gameId
     })
 
+    const userGame4 = await UserGame.insert({
+      userId: user2.body.userId,
+      gameId: game4.gameId
+    })
+
+    const userGame5 = await UserGame.insert({
+      userId: user1.body.userId,
+      gameId: game5.gameId
+    })
+
     const res = await agent
-      .get(`/api/v1/users/1/wins`)
+      .get(`/api/v1/users/3/wins`)
       console.log('RES BODY',res.body)
     expect(res.body).toEqual([
       { userId: user1.body.userId,
