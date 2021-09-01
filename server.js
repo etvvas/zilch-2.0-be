@@ -4,11 +4,11 @@ const GameService = require("./lib/services/GameService.js");
 const httpServer = require("http").createServer(app);
 const pool = require("./lib/utils/pool.js");
 const io = require("socket.io")(httpServer, {
-  cors: true
-  // cors: {
-  //   origin: ['https://zilch-v2-staging.netlify.app'],
-  //   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
-  // }
+  // cors: true
+  cors: {
+    origin: ['https://zilch-v2-staging.netlify.app'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
+  }
   //Heroku
 });
 const {
@@ -58,10 +58,10 @@ io.on("connection", async (socket) => {
   let currentRoomName = null
 
   //deployed
-  // const redisClient = redis.createClient(process.env.REDIS_URL)
+  const redisClient = redis.createClient(process.env.REDIS_URL)
 
   // local
-  const redisClient = redis.createClient();
+  // const redisClient = redis.createClient();
   //
   // get all rooms data;
   //on User entering lobby get all games from redis and send to user
@@ -234,7 +234,7 @@ io.on("connection", async (socket) => {
           gameState[roomName][matchingUser].playerZilches++
           gameState[roomName][matchingUser].zilchRun++
 
-          if(gameState[roomName][matchingUser].roundScores.length >= 4)  currentGameState[roomName][matchingUser].roundScores.shift()
+          if(gameState[roomName][matchingUser].roundScores.length >= 4)  gameState[roomName][matchingUser].roundScores.shift()
           gameState[roomName][matchingUser].roundScores.push({
             roundScore: displayRoundScore(gameState[roomName][matchingUser].roundScore, gameState[roomName][matchingUser].roundScores),
             totalScore: gameState[roomName][matchingUser].playerScore
