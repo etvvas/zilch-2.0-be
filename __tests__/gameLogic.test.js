@@ -191,6 +191,84 @@ describe('tests game logic functions', () => {
       value: 2
     },
   ]
+  const fourFives = [
+    {
+      held: false,
+      value: 5
+    },
+    {
+      held: false,
+      value: 5
+    },
+    {
+      held: false,
+      value: 5
+    },
+    {
+      held: false,
+      value: 5
+    },
+    {
+      held: false,
+      value: 4
+    },
+    {
+      held: false,
+      value: 4
+    },
+  ]
+  const fourThrees = [
+    {
+      held: false,
+      value: 3
+    },
+    {
+      held: false,
+      value: 3
+    },
+    {
+      held: false,
+      value: 3
+    },
+    {
+      held: false,
+      value: 3
+    },
+    {
+      held: false,
+      value: 4
+    },
+    {
+      held: false,
+      value: 4
+    },
+  ]
+  const fiveThrees = [
+    {
+      held: false,
+      value: 3
+    },
+    {
+      held: false,
+      value: 3
+    },
+    {
+      held: false,
+      value: 3
+    },
+    {
+      held: false,
+      value: 3
+    },
+    {
+      held: false,
+      value: 3
+    },
+    {
+      held: false,
+      value: 4
+    },
+  ]
 
   it('rerolls unheld dice and returns an intact dice array', () => {
     const newDiceArray = roll(diceOne)
@@ -231,6 +309,9 @@ describe('tests game logic functions', () => {
     console.log('1 FIVE AND 2 ONES', displayScoringOptions(fiveAndOnesArray));
     console.log('THREE PAIRS', displayScoringOptions(threePairsArray));
     console.log('ZILCH!!!', displayScoringOptions(zilchArray));
+    console.log('FOUR FIVES', displayScoringOptions(fourFives))
+    console.log('FOUR THREES', displayScoringOptions(fourThrees))
+    console.log('FIVE THREES', displayScoringOptions(fiveThrees))
   })
 
   it('tests updating scoring options', () => {
