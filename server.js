@@ -26,6 +26,7 @@ const {
   displayScoringOptions,
   updateDice,
 } = require("./lib/utils/gameLogic.js");
+const { match } = require("assert");
 
 
 const updateLobby = async (redisClient) => {
