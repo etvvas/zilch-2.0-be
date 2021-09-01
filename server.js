@@ -4,11 +4,11 @@ const GameService = require("./lib/services/GameService.js");
 const httpServer = require("http").createServer(app);
 const pool = require("./lib/utils/pool.js");
 const io = require("socket.io")(httpServer, {
-  cors: true
-  // cors: {
-  //   origin: ['https://zilch-v2-staging.netlify.app'],
-  //   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
-  // }
+  // cors: true
+  cors: {
+    origin: ['https://zilch-v2-staging.netlify.app'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
+  }
 }
 );
 const {
@@ -58,10 +58,10 @@ io.on("connection", async (socket) => {
   let currentRoomName = null
 
   //deployed
-  // const redisClient = redis.createClient(process.env.REDIS_URL)
+  const redisClient = redis.createClient(process.env.REDIS_URL)
 
   // local
-  const redisClient = redis.createClient();
+  // const redisClient = redis.createClient();
   //
   // get all rooms data;
   //on User entering lobby get all games from redis and send to user
@@ -187,6 +187,8 @@ io.on("connection", async (socket) => {
             matchingRoom[roomName].currentPlayerIndex,
             matchingRoom[roomName].players
           );
+
+          await updateLobby(redisClient)
         }
       }
     );
@@ -239,10 +241,12 @@ io.on("connection", async (socket) => {
           delete gameState.dice
           io.to(roomName).emit('ZILCH', gameState[roomName].players[gameState[roomName].currentPlayerIndex])
           await setGameData(redisClient, roomName, gameState)
+          await updateLobby(redisClient)
         } else {
           gameState[roomName][matchingUser].zilchRun = 0
           await setGameData(redisClient, roomName, gameState);
           io.to(roomName).emit("ROLLED", gameState.dice, scoringOptions);
+          // await updateLobby(redisClient)
         }
       }
       //IF all dice held then reset dice, send dice on roll
@@ -278,8 +282,8 @@ io.on("connection", async (socket) => {
         ? (currentGameState[roomName].currentPlayerIndex = 1)
         : (currentGameState[roomName].currentPlayerIndex = 0);
 
-      await updateLobby(redisClient)
       await setGameData(redisClient, roomName, currentGameState);
+      await updateLobby(redisClient)
 
       io.to(roomName).emit(
         "BANKED",
