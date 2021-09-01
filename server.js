@@ -170,8 +170,9 @@ io.on("connection", async (socket) => {
           //set user index
           if (Math.random() < 0.5) {
             matchingRoom[roomName].currentPlayerIndex = 0;
+          } else {
+            matchingRoom[roomName].currentPlayerIndex = 1;
           }
-          matchingRoom[roomName].currentPlayerIndex = 1;
 
           //Is it nec to update all three properties now or after
           matchingRoom[roomName].firstUser.gameId = newGame.gameId;
@@ -256,8 +257,6 @@ io.on("connection", async (socket) => {
       currentGameState[roomName].firstUser.userId === currentUserId
         ? (matchingUser = "firstUser")
         : (matchingUser = "secondUser");
-
-
 
       currentGameState[roomName][matchingUser].playerScore += currentGameState[roomName][matchingUser].roundScore
       currentGameState[roomName][matchingUser].roundScore = 0;
