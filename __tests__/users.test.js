@@ -35,17 +35,6 @@ describe('users routes', () => {
 
   const agent = request.agent(app)
 
-  const user1 = agent
-      .post('/api/v1/signup')
-      .send(userOne);
-
-    const user2 = agent
-      .post('/api/v1/signup')
-      .send(userTwo);
-
-    const user3 = agent
-      .post('/api/v1/signup')
-      .send(userThree);
 
   test('create a userGame via POST', async () => {
     const user1 = await agent
