@@ -27,6 +27,7 @@ const {
   filterSelected,
   updateDice,
 } = require("./lib/utils/gameLogic.js");
+const { match } = require("assert");
 
 const updateLobby = async (redisClient) => {
   const allGames = await getAllRoomData(
@@ -101,6 +102,7 @@ io.on("connection", async (socket) => {
             roundScore: 0,
             playerZilches: 0,
             playerUberZilches: 0,
+            zilchRun: 0
           },
         },
       };
@@ -132,6 +134,7 @@ io.on("connection", async (socket) => {
           roundScore: 0,
           playerZilches: 0,
           playerUberZilches: 0,
+          zilchRun: 0
         };
 
         await setGameData(redisClient, roomName, matchingRoom);
@@ -167,8 +170,9 @@ io.on("connection", async (socket) => {
           //set user index
           if (Math.random() < 0.5) {
             matchingRoom[roomName].currentPlayerIndex = 0;
+          } else {
+            matchingRoom[roomName].currentPlayerIndex = 1;
           }
-          matchingRoom[roomName].currentPlayerIndex = 1;
 
           //Is it nec to update all three properties now or after
           matchingRoom[roomName].firstUser.gameId = newGame.gameId;
@@ -224,7 +228,8 @@ io.on("connection", async (socket) => {
         if (scoringOptions[0].choice === 'ZILCH') {
           gameState[roomName][matchingUser].roundScore = 0
           gameState[roomName][matchingUser].playerZilches++
-          if (gameState[roomName][matchingUser].playerZilches % 3 === 0) {
+          gameState[roomName][matchingUser].zilchRun++
+          if (gameState[roomName][matchingUser].zilchRun % 3 === 0) {
             gameState[roomName][matchingUser].playerUberZilches++
             gameState[roomName][matchingUser].score -= 500
           }
@@ -234,6 +239,7 @@ io.on("connection", async (socket) => {
           io.to(roomName).emit('ZILCH', gameState[roomName].players[gameState[roomName].currentPlayerIndex])
           await setGameData(redisClient, roomName, gameState)
         } else {
+          gameState[roomName][matchingUser].zilchRun = 0
           await setGameData(redisClient, roomName, gameState);
           io.to(roomName).emit("ROLLED", gameState.dice, scoringOptions);
         }
@@ -251,8 +257,6 @@ io.on("connection", async (socket) => {
       currentGameState[roomName].firstUser.userId === currentUserId
         ? (matchingUser = "firstUser")
         : (matchingUser = "secondUser");
-
-
 
       currentGameState[roomName][matchingUser].playerScore += currentGameState[roomName][matchingUser].roundScore
       currentGameState[roomName][matchingUser].roundScore = 0;
