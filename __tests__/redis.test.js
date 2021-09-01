@@ -43,30 +43,30 @@ describe('tests redis functions', () => {
     expect(retrievedData).toEqual({ chase: 'abbott' })
   })
 
-  it('gets all of the \'Room\' keys', async () => {
-    await setGameData(redisClient, 'Room1', { room: 'room1' })
-    await setGameData(redisClient, 'Room2', { room: 'room2' })
-    await setGameData(redisClient, 'Room3', { room: 'room3' })
-    await setGameData(redisClient, 'ROOm3', { room: 'room3' })
-    await setGameData(redisClient, 'RooM3', { room: 'room3' })
-    await setGameData(redisClient, 'room3', { room: 'room3' })
+  // it('gets all of the \'Room\' keys', async () => {
+  //   await setGameData(redisClient, 'Room1', { room: 'room1' })
+  //   await setGameData(redisClient, 'Room2', { room: 'room2' })
+  //   await setGameData(redisClient, 'Room3', { room: 'room3' })
+  //   await setGameData(redisClient, 'ROOm3', { room: 'room3' })
+  //   await setGameData(redisClient, 'RooM3', { room: 'room3' })
+  //   await setGameData(redisClient, 'room3', { room: 'room3' })
 
-    const roomsArray = await getAllRooms(redisClient)
+  //   const roomsArray = await getAllRooms(redisClient)
 
-    expect(roomsArray).toEqual(['Room1', 'Room2', 'Room3'])
-  })
+  //   expect(roomsArray).toEqual(['Room1', 'Room2', 'Room3'])
+  // })
 
-  it('gets all of the data from all available rooms', async () => {
-    await setGameData(redisClient, 'Room1', { room: 'room1' })
-    await setGameData(redisClient, 'Room2', { room: 'room2' })
-    await setGameData(redisClient, 'Room3', { room: 'room3' })
-    await setGameData(redisClient, 'room1', { room: 'fakeroom' })
-    await setGameData(redisClient, 'ROOM1', { room: 'fakeroom' })
+  // it('gets all of the data from all available rooms', async () => {
+  //   await setGameData(redisClient, 'Room1', { room: 'room1' })
+  //   await setGameData(redisClient, 'Room2', { room: 'room2' })
+  //   await setGameData(redisClient, 'Room3', { room: 'room3' })
+  //   await setGameData(redisClient, 'room1', { room: 'fakeroom' })
+  //   await setGameData(redisClient, 'ROOM1', { room: 'fakeroom' })
 
-    const roomData = await getAllRoomData(redisClient, await getAllRooms(redisClient))
+  //   const roomData = await getAllRoomData(redisClient, await getAllRooms(redisClient))
 
-    expect(roomData).toEqual([{ room: 'room1' }, { room: 'room2' }, { room: 'room3' }])
-  })
+  //   expect(roomData).toEqual([{ room: 'room1' }, { room: 'room2' }, { room: 'room3' }])
+  // })
 
   it('deletes a room', async () => {
     await setGameData(redisClient, 'Room1', { room: 'room1' })
