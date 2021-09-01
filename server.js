@@ -8,9 +8,8 @@ const io = require("socket.io")(httpServer, {
   cors: {
     origin: ['https://zilch-v2-staging.netlify.app'],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
-  }
-  //Heroku
-});
+  }  }
+);
 const {
   setGameData,
   getGameData,
@@ -73,20 +72,17 @@ io.on("connection", async (socket) => {
 
   });
 
+  // socket.emit('ENTER_LOBBY', gameRooms)
   //get game room data on initial entry
   //AND any time there is an update
   socket.on("JOIN_ROOM", async ({ userId, username, avatar }, roomName) => {
     //Check for matching in redis db
     let matchingRoom = await getGameData(redisClient, roomName);
 
-    //keep track of userId and roomName for disconnect event
-    currentUserId = userId;
-    currentRoomName = roomName;
-
     if (!matchingRoom) {
-      //If no matching room in redis, initialize a room
       matchingRoom = {
         [roomName]: {
+
           ready: [],
           currentPlayerIndex: 0,
           players: [userId],
@@ -349,9 +345,7 @@ io.on("connection", async (socket) => {
   });
 });
 
-
 const PORT = process.env.PORT || 7890;
-
 
 httpServer.listen(PORT, () => {
   console.log(`http server on ${PORT}`);
