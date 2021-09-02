@@ -219,9 +219,9 @@ io.on("connection", async (socket) => {
         scoringOptions = displayScoringOptions(gameState.dice);
         if (scoringOptions[0].choice === 'ZILCH') {
           gameState[roomName].isFreeRoll = true
-          io.to(roomName).emit('ROLLED', gameState.dice, [], gameState[roomName].isFreeRoll)
           delete gameState[roomName].isFreeRoll
           await setGameData(redisClient, roomName, gameState)
+          io.to(roomName).emit('ROLLED', gameState.dice, [], gameState[roomName].isFreeRoll)
         } else {
           await setGameData(redisClient, roomName, gameState);
           io.to(roomName).emit("ROLLED", gameState.dice, scoringOptions);
