@@ -8,9 +8,9 @@ const io = require("socket.io")(httpServer, {
   cors: {
     origin: ['https://zilch-v2-staging.netlify.app'],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
-  }
-  //Heroku
+  }  
 });
+
 const {
   setGameData,
   getGameData,
