@@ -4,14 +4,13 @@ const GameService = require("./lib/services/GameService.js");
 const httpServer = require("http").createServer(app);
 const pool = require("./lib/utils/pool.js");
 const io = require("socket.io")(httpServer, {
-  // cors: true
+    // cors: true
   cors: {
     origin: ['https://zilch-v2.netlify.app'],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
-  }  
-});
-
-// heroku comment
+  }
+}
+);
 const {
   setGameData,
   getGameData,
@@ -27,7 +26,8 @@ const {
   displayScoringOptions,
   updateDice,
 } = require("./lib/utils/gameLogic.js");
-const { match } = require("assert");
+
+
 
 
 const updateLobby = async (redisClient) => {
@@ -218,9 +218,9 @@ io.on("connection", async (socket) => {
         scoringOptions = displayScoringOptions(gameState.dice);
         if (scoringOptions[0].choice === 'ZILCH') {
           gameState[roomName].isFreeRoll = true
-          io.to(roomName).emit('ROLLED', gameState.dice, [], gameState[roomName].isFreeRoll)
           delete gameState[roomName].isFreeRoll
           await setGameData(redisClient, roomName, gameState)
+          io.to(roomName).emit('ROLLED', gameState.dice, [], gameState[roomName].isFreeRoll)
         } else {
           await setGameData(redisClient, roomName, gameState);
           io.to(roomName).emit("ROLLED", gameState.dice, scoringOptions);
@@ -234,15 +234,20 @@ io.on("connection", async (socket) => {
           gameState[roomName][matchingUser].roundScore = 0
           gameState[roomName][matchingUser].playerZilches++
           gameState[roomName][matchingUser].zilchRun++
+          console.log('ZILCH RUN', gameState[roomName][matchingUser].zilchRun)
 
           if(gameState[roomName][matchingUser].roundScores.length >= 4)  gameState[roomName][matchingUser].roundScores.shift()
+
           gameState[roomName][matchingUser].roundScores.push({
             roundScore: displayRoundScore(gameState[roomName][matchingUser].roundScore, gameState[roomName][matchingUser].roundScores),
             totalScore: gameState[roomName][matchingUser].playerScore
           })
+
           if (gameState[roomName][matchingUser].zilchRun === 3) {
+            console.log('UBER ZILCH')
             gameState[roomName][matchingUser].playerUberZilches++
-            gameState[roomName][matchingUser].score -= 500
+            gameState[roomName][matchingUser].playerScore -= 500
+            console.log(gameState[roomName][matchingUser].playerScore)
             gameState[roomName][matchingUser].zilchRun = 0
           }
          
@@ -254,9 +259,8 @@ io.on("connection", async (socket) => {
           await setGameData(redisClient, roomName, gameState)
           await updateLobby(redisClient)
         } else {
-          gameState[roomName][matchingUser].zilchRun = 0
-          await setGameData(redisClient, roomName, gameState);
           io.to(roomName).emit("ROLLED", gameState.dice, scoringOptions);
+          await setGameData(redisClient, roomName, gameState);
           // await updateLobby(redisClient)
         }
       }
@@ -273,7 +277,8 @@ io.on("connection", async (socket) => {
       currentGameState[roomName].firstUser.userId === currentUserId
         ? (matchingUser = "firstUser")
         : (matchingUser = "secondUser");
-
+        
+        currentGameState[roomName][matchingUser].zilchRun = 0
     console.log('ROUND SCORE', displayRoundScore(currentGameState[roomName][matchingUser].roundScore, currentGameState[roomName][matchingUser].zilchRun));
       currentGameState[roomName][matchingUser].playerScore += currentGameState[roomName][matchingUser].roundScore
       if(currentGameState[roomName][matchingUser].roundScores.length >= 4)  currentGameState[roomName][matchingUser].roundScores.shift()
@@ -341,20 +346,28 @@ io.on("connection", async (socket) => {
 
   });
   socket.on("disconnect", async () => {
-
+    
     // remove room from redis
     if (currentRoomName) {
       const roomData = await getGameData(redisClient, currentRoomName);
       // On disconnect remove player from players array
       const UpdatedRoomPlayers = roomData?.[currentRoomName].players.filter(
         (playerId) => playerId !== currentUserId
+        
       );
+      if(roomData[currentRoomName].ready.length === 2 ) {
+        console.log('Player disconnected');
+        io.to(currentRoomName).emit('OPPONENT_DISCONNECT')
+      }
+      //Emit event if user disconnects mid game
+     
       if (!UpdatedRoomPlayers || UpdatedRoomPlayers.length == 0) {
         //If no players in player array remove room
         await deleteRoom(redisClient, currentRoomName);
         await updateLobby(redisClient);
       } else {
         //If players in player array, update player array, and remove either firstUser or secondUser from game Object
+       
         roomData[currentRoomName].players = UpdatedRoomPlayers;
         let matchingUser;
         //Check if user is first or second
