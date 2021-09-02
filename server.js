@@ -355,10 +355,11 @@ io.on("connection", async (socket) => {
         (playerId) => playerId !== currentUserId
         
       );
-      if(roomData[currentRoomName].ready.length === 2 ) {
-        console.log('Player disconnected');
-        io.to(currentRoomName).emit('OPPONENT_DISCONNECT')
-      }
+
+      // if(roomData[currentRoomName].ready.length === 2 ) {
+      //   console.log('Player disconnected');
+      //   io.to(currentRoomName).emit('OPPONENT_DISCONNECT')
+      // }
       //Emit event if user disconnects mid game
      
       if (!UpdatedRoomPlayers || UpdatedRoomPlayers.length == 0) {
