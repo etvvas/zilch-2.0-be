@@ -4,7 +4,7 @@ const GameService = require("./lib/services/GameService.js");
 const httpServer = require("http").createServer(app);
 const pool = require("./lib/utils/pool.js");
 const io = require("socket.io")(httpServer, {
-  // cors: true
+    // cors: true
   cors: {
     origin: ['https://zilch-v2-staging.netlify.app'],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
@@ -26,7 +26,7 @@ const {
   displayScoringOptions,
   updateDice,
 } = require("./lib/utils/gameLogic.js");
-const { match } = require("assert");
+
 
 
 const updateLobby = async (redisClient) => {
@@ -340,20 +340,28 @@ io.on("connection", async (socket) => {
 
   });
   socket.on("disconnect", async () => {
-
+    
     // remove room from redis
     if (currentRoomName) {
       const roomData = await getGameData(redisClient, currentRoomName);
       // On disconnect remove player from players array
       const UpdatedRoomPlayers = roomData?.[currentRoomName].players.filter(
         (playerId) => playerId !== currentUserId
+        
       );
+      if(roomData[currentRoomName].ready.length === 2 ) {
+        console.log('Player disconnected');
+        io.to(currentRoomName).emit('OPPONENT_DISCONNECT')
+      }
+      //Emit event if user disconnects mid game
+     
       if (!UpdatedRoomPlayers || UpdatedRoomPlayers.length == 0) {
         //If no players in player array remove room
         await deleteRoom(redisClient, currentRoomName);
         await updateLobby(redisClient);
       } else {
         //If players in player array, update player array, and remove either firstUser or secondUser from game Object
+       
         roomData[currentRoomName].players = UpdatedRoomPlayers;
         let matchingUser;
         //Check if user is first or second
