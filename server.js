@@ -4,13 +4,13 @@ const GameService = require("./lib/services/GameService.js");
 const httpServer = require("http").createServer(app);
 const pool = require("./lib/utils/pool.js");
 const io = require("socket.io")(httpServer, {
-  cors: true
-  // cors: {
-  //   origin: ['https://zilch-v2-staging.netlify.app'],
-  //   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
-  // }  
-}
-);
+  // cors: true
+  cors: {
+    origin: ['https://zilch-v2-staging.netlify.app'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
+  }
+});
+
 const {
   setGameData,
   getGameData,
@@ -24,10 +24,9 @@ const {
   roll,
   initializeDice,
   displayScoringOptions,
-  filterSelected,
   updateDice,
 } = require("./lib/utils/gameLogic.js");
-const { match } = require("assert");
+
 
 const updateLobby = async (redisClient) => {
   const allGames = await getAllRoomData(
@@ -100,9 +99,10 @@ io.on("connection", async (socket) => {
             numberOfRounds: 0,
             playerScore: 0,
             roundScore: 0,
+            roundScores: [],
             playerZilches: 0,
             playerUberZilches: 0,
-            zilchRun: 0
+            zilchRun: 0,
           },
         },
       };
@@ -132,9 +132,10 @@ io.on("connection", async (socket) => {
           numberOfRounds: 0,
           playerScore: 0,
           roundScore: 0,
+          roundScores: [],
           playerZilches: 0,
           playerUberZilches: 0,
-          zilchRun: 0
+          zilchRun: 0,
         };
 
         await setGameData(redisClient, roomName, matchingRoom);
@@ -170,8 +171,9 @@ io.on("connection", async (socket) => {
           //set user index
           if (Math.random() < 0.5) {
             matchingRoom[roomName].currentPlayerIndex = 0;
+          } else {
+            matchingRoom[roomName].currentPlayerIndex = 1;
           }
-          matchingRoom[roomName].currentPlayerIndex = 1;
 
           //Is it nec to update all three properties now or after
           matchingRoom[roomName].firstUser.gameId = newGame.gameId;
@@ -186,6 +188,8 @@ io.on("connection", async (socket) => {
             matchingRoom[roomName].currentPlayerIndex,
             matchingRoom[roomName].players
           );
+
+          await updateLobby(redisClient)
         }
       }
     );
@@ -228,43 +232,59 @@ io.on("connection", async (socket) => {
           gameState[roomName][matchingUser].roundScore = 0
           gameState[roomName][matchingUser].playerZilches++
           gameState[roomName][matchingUser].zilchRun++
-          if (gameState[roomName][matchingUser].zilchRun % 3 === 0) {
+
+          if (gameState[roomName][matchingUser].roundScores.length >= 4) gameState[roomName][matchingUser].roundScores.shift()
+          gameState[roomName][matchingUser].roundScores.push({
+            roundScore: displayRoundScore(gameState[roomName][matchingUser].roundScore, gameState[roomName][matchingUser].roundScores),
+            totalScore: gameState[roomName][matchingUser].playerScore
+          })
+          if (gameState[roomName][matchingUser].zilchRun === 3) {
             gameState[roomName][matchingUser].playerUberZilches++
             gameState[roomName][matchingUser].score -= 500
+            gameState[roomName][matchingUser].zilchRun = 0
           }
-          gameState[roomName].currentPlayerIndex == 1 ? gameState[roomName].currentPlayerIndex = 0 : gameState[roomName].currentPlayerIndex = 1
 
+          const otherUser = getOtherUser(userId, gameState[roomName])
+
+          gameState[roomName].currentPlayerIndex == 1 ? gameState[roomName].currentPlayerIndex = 0 : gameState[roomName].currentPlayerIndex = 1
           delete gameState.dice
-          io.to(roomName).emit('ZILCH', gameState[roomName].players[gameState[roomName].currentPlayerIndex])
+          io.to(roomName).emit('ZILCH', gameState[roomName].players[gameState[roomName].currentPlayerIndex], gameState[roomName][otherUser].roundScores)
           await setGameData(redisClient, roomName, gameState)
+          await updateLobby(redisClient)
         } else {
           gameState[roomName][matchingUser].zilchRun = 0
           await setGameData(redisClient, roomName, gameState);
           io.to(roomName).emit("ROLLED", gameState.dice, scoringOptions);
+          // await updateLobby(redisClient)
         }
       }
       //IF all dice held then reset dice, send dice on roll
 
     });
-
+    socket.emit('UPDATE')
     socket.on("BANK", async () => {
       const currentGameState = await getGameData(redisClient, roomName);
       delete currentGameState.dice;
-
-
+      //Every round push the users score to their respective array
+      //End Match
       let matchingUser;
       currentGameState[roomName].firstUser.userId === currentUserId
         ? (matchingUser = "firstUser")
         : (matchingUser = "secondUser");
 
-
-
+      console.log('ROUND SCORE', displayRoundScore(currentGameState[roomName][matchingUser].roundScore, currentGameState[roomName][matchingUser].zilchRun));
       currentGameState[roomName][matchingUser].playerScore += currentGameState[roomName][matchingUser].roundScore
+      if (currentGameState[roomName][matchingUser].roundScores.length >= 4) currentGameState[roomName][matchingUser].roundScores.shift()
+      currentGameState[roomName][matchingUser].roundScores.push({
+        roundScore: displayRoundScore(currentGameState[roomName][matchingUser].roundScore, currentGameState[roomName][matchingUser].roundScores),
+        totalScore: currentGameState[roomName][matchingUser].playerScore
+      })
+
       currentGameState[roomName][matchingUser].roundScore = 0;
       currentGameState[roomName][matchingUser].numberOfRounds++
       currentGameState[roomName].rounds = Math.max(currentGameState[roomName].firstUser.numberOfRounds, currentGameState[roomName].secondUser.numberOfRounds)
-
       if (currentGameState[roomName][matchingUser].playerScore >= currentGameState[roomName].targetScore) {
+        //End Game
         currentGameState[roomName].firstUserId = currentGameState[roomName].firstUser.userId
         currentGameState[roomName].secondUserId = currentGameState[roomName].secondUser.userId
         currentGameState[roomName].winner = currentGameState[roomName][matchingUser].userName
@@ -280,12 +300,15 @@ io.on("connection", async (socket) => {
         : (currentGameState[roomName].currentPlayerIndex = 0);
 
       await setGameData(redisClient, roomName, currentGameState);
+      const otherUser = getOtherUser(userId, currentGameState[roomName])
+      await updateLobby(redisClient)
 
       io.to(roomName).emit(
         "BANKED",
         currentGameState,
         currentGameState[roomName].currentPlayerIndex,
-        currentGameState[roomName].players
+        currentGameState[roomName].players,
+        currentGameState[roomName][otherUser].roundScores
       );
     });
 
@@ -362,4 +385,31 @@ process.on("exit", () => {
 });
 
 module.exports = io;
+function getMatchingUser(currentUserId, gameState) {
+  let matchingUser;
+  gameState.firstUser.userId === currentUserId
+    ? (matchingUser = "firstUser")
+    : (matchingUser = "secondUser");
+  return matchingUser
+}
 
+function getOtherUser(currentUserId, gameState) {
+  let matchingUser;
+  gameState.firstUser.userId === currentUserId
+    ? (matchingUser = "secondUser")
+    : (matchingUser = "firstUser");
+  return matchingUser
+
+}
+
+function displayRoundScore(roundScore, roundScores) {
+
+  if (roundScore === 0) {
+    if (roundScores.length > 1) {
+      if (roundScores.slice(-2)[0].roundScore === 'ZILCH' && roundScores.slice(-2)[1].roundScore === 'ZILCH') return 'UBER ZILCH! -500 PTS'
+
+    }
+    return 'ZILCH'
+  }
+  return roundScore
+}

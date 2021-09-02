@@ -35,7 +35,6 @@ describe('users routes', () => {
 
   const agent = request.agent(app)
 
-
   test('create a userGame via POST', async () => {
     const user1 = await agent
       .post('/api/v1/signup')
@@ -243,6 +242,22 @@ describe('users routes', () => {
       winner: user2.body.username
     })
 
+    const game4 = await Game.insert({
+      firstUserId: user2.body.userId.toString(),
+      secondUserId: user3.body.userId.toString(),
+      timestampStart: '5:00',
+      targetScore: 10000,
+      winner: user2.body.username
+    })
+
+    const game5 = await Game.insert({
+      firstUserId: user1.body.userId.toString(),
+      secondUserId: user3.body.userId.toString(),
+      timestampStart: '5:00',
+      targetScore: 10000,
+      winner: user3.body.username
+    })
+
     const userGame1 = await UserGame.insert({
       userId: user1.body.userId,
       gameId: game1.gameId
@@ -256,6 +271,16 @@ describe('users routes', () => {
     const userGame3 = await UserGame.insert({
       userId: user2.body.userId,
       gameId: game3.gameId
+    })
+
+    const userGame4 = await UserGame.insert({
+      userId: user2.body.userId,
+      gameId: game4.gameId
+    })
+
+    const userGame5 = await UserGame.insert({
+      userId: user1.body.userId,
+      gameId: game5.gameId
     })
 
     const res = await agent
@@ -434,15 +459,28 @@ describe('users routes', () => {
     }])
   })
 
-  test.only('get user info by username', async () => {
+  test('get user info by username', async () => {
     const user1 = await agent
       .post('/api/v1/signup')
       .send(userOne);
 
-    console.log('user1', user1.body)
-    console.log('user1 username', user1.body.username)
     const res = await agent
       .get(`/api/v1/users/${user1.body.username}`)
+
+    expect(res.body).toEqual({
+      userId: '1',
+      username: 'username',
+      avatar: 'Avatar.png'
+    })
+  })
+
+  test('get user info by id', async () => {
+    const user1 = await agent
+      .post('/api/v1/signup')
+      .send(userOne);
+
+    const res = await agent
+      .get(`/api/v1/users/id/${user1.body.userId}`)
 
     expect(res.body).toEqual({
       userId: '1',
