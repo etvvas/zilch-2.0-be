@@ -199,6 +199,9 @@ describe('Games tests', () => {
 
     const res2 = await agent
       .get(`/api/v1/games/${body.gameId}/zilches`)
+    
+    const res3 = await agent
+      .get(`/api/v1/games/${body.gameId}/uberZilches`)
 
     expect(res1.body).toEqual([
       {
@@ -227,10 +230,15 @@ describe('Games tests', () => {
       }
     ])
 
-    console.log('res body', res2.body)
+    console.log('res body', res3.body)
     expect(res2.body).toEqual([
       { gameId: '1', userId: '1', playerZilches: 3 },
       { gameId: '1', userId: '2', playerZilches: 4 }
+    ])
+
+    expect(res3.body).toEqual([
+      { gameId: '1', userId: '1', playerUberZilches: 1 },
+      { gameId: '1', userId: '2', playerUberZilches: 1 }
     ])
   })
 });
