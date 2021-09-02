@@ -194,12 +194,13 @@ describe('Games tests', () => {
       .post('/api/v1/games/end-game')
       .send(gameData)
 
-    const res = await agent
+    const res1 = await agent
       .get(`/api/v1/games/${body.gameId}/results`)
 
-      console.log('res body', res.body)
+    const res2 = await agent
+      .get(`/api/v1/games/${body.gameId}/zilches`)
 
-    expect(res.body).toEqual([
+    expect(res1.body).toEqual([
       {
         gameId: '1',
         firstUserId: '1',
@@ -224,6 +225,12 @@ describe('Games tests', () => {
         numberOfRounds: 10,
         playerScore: 5000
       }
+    ])
+
+    console.log('res body', res2.body)
+    expect(res2.body).toEqual([
+      { gameId: '1', userId: '1', playerZilches: 3 },
+      { gameId: '1', userId: '2', playerZilches: 4 }
     ])
   })
 });
