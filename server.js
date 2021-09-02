@@ -356,7 +356,6 @@ io.on("connection", async (socket) => {
         (playerId) => playerId !== currentUserId
         
       );
-
       if (!UpdatedRoomPlayers || UpdatedRoomPlayers.length == 0) {
         //If no players in player array remove room
         await deleteRoom(redisClient, currentRoomName);
