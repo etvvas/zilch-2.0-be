@@ -473,4 +473,19 @@ describe('users routes', () => {
       avatar: 'Avatar.png'
     })
   })
+
+  test('get user info by id', async() => {
+    const user1 = await agent
+      .post('/api/v1/signup')
+      .send(userOne);
+
+    const res = await agent
+      .get(`/api/v1/users/id/${user1.body.userId}`)
+
+    expect(res.body).toEqual({
+      userId: '1',
+      username: 'username',
+      avatar: 'Avatar.png'
+    })
+  })
 });
