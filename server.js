@@ -59,6 +59,7 @@ io.on("connection", async (socket) => {
   let currentRoomName = null
 
   //deployed
+  //comment
   const redisClient = redis.createClient(process.env.REDIS_URL)
 
   // local
@@ -92,7 +93,7 @@ io.on("connection", async (socket) => {
           players: [userId],
           roomName: roomName,
           rounds: 1,
-          targetScore: 6000,
+          targetScore: 1000,
           firstUser: {
             userName: username,
             userId: userId,
@@ -218,9 +219,9 @@ io.on("connection", async (socket) => {
         scoringOptions = displayScoringOptions(gameState.dice);
         if (scoringOptions[0].choice === 'ZILCH') {
           gameState[roomName].isFreeRoll = true
+          io.to(roomName).emit('ROLLED', gameState.dice, [], gameState[roomName].isFreeRoll)
           delete gameState[roomName].isFreeRoll
           await setGameData(redisClient, roomName, gameState)
-          io.to(roomName).emit('ROLLED', gameState.dice, [], gameState[roomName].isFreeRoll)
         } else {
           await setGameData(redisClient, roomName, gameState);
           io.to(roomName).emit("ROLLED", gameState.dice, scoringOptions);
@@ -250,7 +251,7 @@ io.on("connection", async (socket) => {
             console.log(gameState[roomName][matchingUser].playerScore)
             gameState[roomName][matchingUser].zilchRun = 0
           }
-         
+
           const otherUser = getOtherUser(userId, gameState[roomName])
 
           gameState[roomName].currentPlayerIndex == 1 ? gameState[roomName].currentPlayerIndex = 0 : gameState[roomName].currentPlayerIndex = 1
@@ -281,7 +282,7 @@ io.on("connection", async (socket) => {
         currentGameState[roomName][matchingUser].zilchRun = 0
     console.log('ROUND SCORE', displayRoundScore(currentGameState[roomName][matchingUser].roundScore, currentGameState[roomName][matchingUser].zilchRun));
       currentGameState[roomName][matchingUser].playerScore += currentGameState[roomName][matchingUser].roundScore
-      if(currentGameState[roomName][matchingUser].roundScores.length >= 4)  currentGameState[roomName][matchingUser].roundScores.shift()
+      if (currentGameState[roomName][matchingUser].roundScores.length >= 4) currentGameState[roomName][matchingUser].roundScores.shift()
       currentGameState[roomName][matchingUser].roundScores.push({
         roundScore: displayRoundScore(currentGameState[roomName][matchingUser].roundScore, currentGameState[roomName][matchingUser].roundScores),
         totalScore: currentGameState[roomName][matchingUser].playerScore
@@ -305,7 +306,7 @@ io.on("connection", async (socket) => {
       currentGameState[roomName].currentPlayerIndex == 0
         ? (currentGameState[roomName].currentPlayerIndex = 1)
         : (currentGameState[roomName].currentPlayerIndex = 0);
-     
+
       await setGameData(redisClient, roomName, currentGameState);
       const otherUser = getOtherUser(userId, currentGameState[roomName])
       await updateLobby(redisClient)
@@ -355,13 +356,6 @@ io.on("connection", async (socket) => {
         (playerId) => playerId !== currentUserId
         
       );
-
-      // if(roomData[currentRoomName].ready.length === 2 ) {
-      //   console.log('Player disconnected');
-      //   io.to(currentRoomName).emit('OPPONENT_DISCONNECT')
-      // }
-      //Emit event if user disconnects mid game
-     
       if (!UpdatedRoomPlayers || UpdatedRoomPlayers.length == 0) {
         //If no players in player array remove room
         await deleteRoom(redisClient, currentRoomName);
@@ -404,25 +398,25 @@ module.exports = io;
 function getMatchingUser(currentUserId, gameState) {
   let matchingUser;
   gameState.firstUser.userId === currentUserId
-  ? (matchingUser = "firstUser")
-  : (matchingUser = "secondUser");
+    ? (matchingUser = "firstUser")
+    : (matchingUser = "secondUser");
   return matchingUser
 }
 
-function getOtherUser(currentUserId, gameState){
+function getOtherUser(currentUserId, gameState) {
   let matchingUser;
   gameState.firstUser.userId === currentUserId
-  ? (matchingUser = "secondUser")
-  : (matchingUser = "firstUser");
+    ? (matchingUser = "secondUser")
+    : (matchingUser = "firstUser");
   return matchingUser
 
 }
 
-function displayRoundScore(roundScore, roundScores){
- 
-  if(roundScore === 0){
-    if(roundScores.length > 1) {
-      if(roundScores.slice(-2)[0].roundScore === 'ZILCH' && roundScores.slice(-2)[1].roundScore === 'ZILCH') return 'UBER ZILCH! -500 PTS'
+function displayRoundScore(roundScore, roundScores) {
+
+  if (roundScore === 0) {
+    if (roundScores.length > 1) {
+      if (roundScores.slice(-2)[0].roundScore === 'ZILCH' && roundScores.slice(-2)[1].roundScore === 'ZILCH') return 'UBER ZILCH! -500 PTS'
 
     }
     return 'ZILCH'

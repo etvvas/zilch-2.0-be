@@ -474,7 +474,7 @@ describe('users routes', () => {
     })
   })
 
-  test('get user info by id', async() => {
+  test('get user info by id', async () => {
     const user1 = await agent
       .post('/api/v1/signup')
       .send(userOne);
