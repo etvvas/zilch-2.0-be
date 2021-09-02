@@ -148,7 +148,9 @@ describe('Games tests', () => {
     expect(body).toEqual(gameData)
   })
 
-  test('get results of a game', async() => {
+  test('get results, zilches, and uber zilches of a game', async() => {
+   let gameData;
+
     const user1Res = await agent
       .post('/api/v1/signup')
       .send(user);
@@ -165,37 +167,63 @@ describe('Games tests', () => {
         secondUserId: user2Res.body.userId
       })
 
-      const resultsOne = {
-        gameId: newGame.gameId,
-        userId: user1Res.body.userId,
-        numberOfRounds: 5,
-        playerScore: 300
+    gameData = newGame.body.newGame;
+
+    gameData.winner = user.username;
+    gameData.timestampEnd = '2:00';
+
+    gameData.firstUser = {
+      userId: user1Res.body.userId,
+      gameId: gameData.gameId,
+      numberOfRounds: 10,
+      playerScore: 3000,
+      playerZilches: 3,
+      playerUberZilches: 1
+    }
+
+    gameData.secondUser = {
+      userId: user2Res.body.userId,
+      gameId: gameData.gameId,
+      numberOfRounds: 10,
+      playerScore: 5000,
+      playerZilches: 4,
+      playerUberZilches: 1
+    }
+
+    const { body } = await agent
+      .post('/api/v1/games/end-game')
+      .send(gameData)
+
+    const res = await agent
+      .get(`/api/v1/games/${body.gameId}/results`)
+
+      console.log('res body', res.body)
+
+    expect(res.body).toEqual([
+      {
+        gameId: '1',
+        firstUserId: '1',
+        secondUserId: '2',
+        winner: 'chase',
+        timestampStart: '1:50',
+        timestampEnd: '2:00',
+        targetScore: 5000,
+        userId: '1',
+        numberOfRounds: 10,
+        playerScore: 3000
+      },
+      {
+        gameId: '1',
+        firstUserId: '1',
+        secondUserId: '2',
+        winner: 'chase',
+        timestampStart: '1:50',
+        timestampEnd: '2:00',
+        targetScore: 5000,
+        userId: '2',
+        numberOfRounds: 10,
+        playerScore: 5000
       }
-
-      const resultsTwo = {
-        gameId: newGame.gameId,
-        userId: user2Res.body.userId,
-        numberOfRounds: 5,
-        playerScore: 500
-      }
-
-      const results1 = await agent
-      .post('/api/v1/results')
-      .send(resultsOne);
-
-      const results2 = await agent
-      .post('/api/v1/results')
-      .send(resultsTwo);
-
-      console.log("new game", newGame)
-      console.log("results1", results1)
-      console.log("results2", results2)
-
-      const res = await agent
-        .get(`/api/v1/games/${newGame.gameId}/results`)
-
-      expect(res.body).toEqual([
-
-      ])
+    ])
   })
 });
