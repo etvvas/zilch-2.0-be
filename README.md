@@ -46,4 +46,8 @@ Server: https://zilch-v2.herokuapp.com/
 Frontend: https://github.com/etvvas/zilch-2.0-fe <br>
 Server: https://github.com/etvvas/zilch-2.0-be
 
+### Planning
+
+Miro: https://miro.com/app/board/o9J_l1OKI9s=/
+
 ---
