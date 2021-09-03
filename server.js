@@ -323,27 +323,38 @@ io.on("connection", async (socket) => {
     socket.on("UPDATE_SELECTED", async (selectedOptions) => {
       let matchingUser;
 
+      // grab game data from redis
       const roomData = await getGameData(redisClient, roomName)
 
+      // assigns variable to define matching
       roomData[currentRoomName].firstUser.userId === currentUserId
         ? (matchingUser = "firstUser")
         : (matchingUser = "secondUser");
 
+      // update the score depending on the selected object
       roomData[roomName][matchingUser].roundScore += selectedOptions[0].score;
+
+      // change dice data on back end to match state on front end
       const updatedDice = updateDice(roomData.dice, selectedOptions)
       roomData.dice = updatedDice
+
+      // if all dice are held, trigger a free roll
       if (roomData.dice.filter(die => die.held === true).length === 6) {
         roomData[currentRoomName].isFreeRoll = true
       }
 
+      // calculate scoring options available based on the updated dice
       const scoringOptions = displayScoringOptions(updatedDice)
 
-      // without toggle
-      // with toggle, wait to setGameData on Roll or Bank
+      // send the updated dice, scoring options, and room state to the front end
       io.to(roomName).emit('UPDATE_SCORING_OPTIONS', updatedDice, scoringOptions, roomData[currentRoomName])
+
+      // once front end knows that a free roll is triggered, delete the isFreeRoll property
       if (roomData[currentRoomName].isFreeRoll) {
         delete roomData[currentRoomName].isFreeRoll
       }
+
+      // update redis
       await setGameData(redisClient, roomName, roomData)
     });
 
