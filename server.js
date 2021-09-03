@@ -8,9 +8,10 @@ const io = require("socket.io")(httpServer, {
   cors: {
     origin: ['https://zilch-v2-staging.netlify.app'],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
-  }
-}
-);
+  }  
+});
+
+
 const {
   setGameData,
   getGameData,
@@ -79,7 +80,7 @@ io.on("connection", async (socket) => {
   // socket.emit('ENTER_LOBBY', gameRooms)
   //get game room data on initial entry
   //AND any time there is an update
-  socket.on("JOIN_ROOM", async ({ userId, username, avatar }, roomName) => {
+  socket.on("JOIN_ROOM", async ({ userId, username, avatar }, roomName, {targetPoints}) => {
     //Check for matching in redis db
     let matchingRoom = await getGameData(redisClient, roomName);
     currentUserId = userId;
@@ -87,13 +88,12 @@ io.on("connection", async (socket) => {
     if (!matchingRoom) {
       matchingRoom = {
         [roomName]: {
-
           ready: [],
           currentPlayerIndex: 0,
           players: [userId],
           roomName: roomName,
           rounds: 1,
-          targetScore: 1000,
+          targetScore: targetPoints,
           firstUser: {
             userName: username,
             userId: userId,
@@ -109,7 +109,7 @@ io.on("connection", async (socket) => {
           },
         },
       };
-
+      console.log(matchingRoom)
       await setGameData(redisClient, roomName, matchingRoom);
       socket.emit("ROOM_JOINED", matchingRoom);
       socket.join(roomName);
@@ -126,6 +126,7 @@ io.on("connection", async (socket) => {
         matchingRoom[roomName].secondUser
           ? (userIdentifier = "firstUser")
           : (userIdentifier = "secondUser");
+
         matchingRoom[roomName].players.push(userId);
         matchingRoom[roomName][userIdentifier] = {
           userName: username,
@@ -245,10 +246,9 @@ io.on("connection", async (socket) => {
           })
 
           if (gameState[roomName][matchingUser].zilchRun === 3) {
-            console.log('UBER ZILCH')
             gameState[roomName][matchingUser].playerUberZilches++
             gameState[roomName][matchingUser].playerScore -= 500
-            console.log(gameState[roomName][matchingUser].playerScore)
+            
             gameState[roomName][matchingUser].zilchRun = 0
           }
 
@@ -279,8 +279,8 @@ io.on("connection", async (socket) => {
         ? (matchingUser = "firstUser")
         : (matchingUser = "secondUser");
         
-        currentGameState[roomName][matchingUser].zilchRun = 0
-    console.log('ROUND SCORE', displayRoundScore(currentGameState[roomName][matchingUser].roundScore, currentGameState[roomName][matchingUser].zilchRun));
+      currentGameState[roomName][matchingUser].zilchRun = 0
+
       currentGameState[roomName][matchingUser].playerScore += currentGameState[roomName][matchingUser].roundScore
       if (currentGameState[roomName][matchingUser].roundScores.length >= 4) currentGameState[roomName][matchingUser].roundScores.shift()
       currentGameState[roomName][matchingUser].roundScores.push({
@@ -299,8 +299,8 @@ io.on("connection", async (socket) => {
         currentGameState[roomName].timestampEnd = moment().format()
 
         await GameService.endGame(currentGameState[roomName])
-        await deleteRoom(redisClient, roomName)
-        return io.to(roomName).emit('GAME_OVER', currentGameState[roomName])
+        io.to(roomName).emit('GAME_OVER', currentGameState[roomName])
+        return await deleteRoom(redisClient, roomName)
       }
       // switch current player
       currentGameState[roomName].currentPlayerIndex == 0
