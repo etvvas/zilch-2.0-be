@@ -355,6 +355,12 @@ io.on("connection", async (socket) => {
         (playerId) => playerId !== currentUserId
         
       );
+      if(roomData?.[currentRoomName] && roomData[currentRoomName].ready.length === 2 ) {
+        console.log('PLAYER DISCONNECT FIRED 1');
+        io.to(currentRoomName).emit('OPPONENT_DISCONNECT')
+        await deleteRoom(redisClient, currentRoomName);
+        await updateLobby(redisClient);
+      }
       if (!UpdatedRoomPlayers || UpdatedRoomPlayers.length == 0) {
         //If no players in player array remove room
         await deleteRoom(redisClient, currentRoomName);
