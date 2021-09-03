@@ -6,7 +6,7 @@ const pool = require("./lib/utils/pool.js");
 const io = require("socket.io")(httpServer, {
     // cors: true
   cors: {
-    origin: ['https://zilch-v2.netlify.app'],
+    origin: ['https://zilch-v2-staging.netlify.app'],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
   }  
 });
