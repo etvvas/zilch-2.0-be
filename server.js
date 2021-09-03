@@ -4,13 +4,14 @@ const GameService = require("./lib/services/GameService.js");
 const httpServer = require("http").createServer(app);
 const pool = require("./lib/utils/pool.js");
 const io = require("socket.io")(httpServer, {
-    cors: true
-  // cors: {
-  //   origin: ['https://zilch-v2-staging.netlify.app'],
-  //   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
-  // }
-}
-);
+    // cors: true
+  cors: {
+    origin: ['https://zilch-v2-staging.netlify.app'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
+  }  
+});
+
+
 const {
   setGameData,
   getGameData,
@@ -60,10 +61,10 @@ io.on("connection", async (socket) => {
 
   //deployed
   //comment
-  // const redisClient = redis.createClient(process.env.REDIS_URL)
+  const redisClient = redis.createClient(process.env.REDIS_URL)
 
   // local
-  const redisClient = redis.createClient();
+  // const redisClient = redis.createClient();
   //
   // get all rooms data;
   //on User entering lobby get all games from redis and send to user
